@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountService", "AccountService\AccountService.csproj", "{92C3FDAC-3717-4AD3-8BB6-2A8C8E58D1FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1F3FD5A5-6854-4BBD-ACE9-6C8CDEF9C95A}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92C3FDAC-3717-4AD3-8BB6-2A8C8E58D1FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92C3FDAC-3717-4AD3-8BB6-2A8C8E58D1FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92C3FDAC-3717-4AD3-8BB6-2A8C8E58D1FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92C3FDAC-3717-4AD3-8BB6-2A8C8E58D1FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
