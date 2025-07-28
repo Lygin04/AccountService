@@ -1,8 +1,30 @@
+using AccountService.Behaviors;
+using AccountService.Extensions;
+using AccountService.Infrastructure.Clients;
+using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.Repositories;
+using AccountService.Infrastructure.Repositories.Interfaces;
+using AccountService.Middleware;
+using FluentValidation;
+using MediatR;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddSwagger();
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
+builder.Services.AddSingleton<FakeDataStorage>();
+builder.Services.AddSingleton<IClientVerificationService, ClientVerificationStub>();
+builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
+builder.Services.AddSingleton<IFakeDataStorage, FakeDataStorage>();
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -10,32 +32,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
