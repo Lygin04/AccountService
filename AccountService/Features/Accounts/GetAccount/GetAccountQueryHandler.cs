@@ -1,4 +1,5 @@
 ﻿using AccountService.Common.Abstractions;
+using AccountService.Exceptions.Account;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Repositories.Interfaces;
 

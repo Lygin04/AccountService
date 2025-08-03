@@ -1,5 +1,5 @@
 ﻿using AccountService.Common.Abstractions;
-using AccountService.Features.Accounts;
+using AccountService.Exceptions.Account;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Repositories.Interfaces;
 using MediatR;

@@ -1,4 +1,5 @@
 ﻿using AccountService.Common.Abstractions;
+using AccountService.Exceptions.Account;
 using AccountService.Infrastructure.Repositories.Interfaces;
 using MediatR;
 

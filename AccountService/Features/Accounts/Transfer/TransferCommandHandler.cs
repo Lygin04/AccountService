@@ -1,4 +1,5 @@
 ﻿using AccountService.Common.Abstractions;
+using AccountService.Exceptions.Account;
 using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
