@@ -1,12 +1,13 @@
 ﻿using AccountService.Common.Abstractions;
+using AccountService.Exceptions.Account;
 using AccountService.Infrastructure.Repositories.Interfaces;
 using MediatR;
 
 namespace AccountService.Features.Accounts.UpdateAccount;
 
-public class UpdateAccountCommandHandler(IFakeDataStorage fakeDataStorage) : ICommandHandler<UpdateAccountCommand, Unit>
+public class UpdateAccountMessageHandler(IFakeDataStorage fakeDataStorage) : IMessageHandler<UpdateAccountMessage, Unit>
 {
-    public async Task<Unit> Handle(UpdateAccountCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(UpdateAccountMessage request, CancellationToken cancellationToken)
     {
         var account = await fakeDataStorage.GetAccountByIdAsync(request.AccountId);
         

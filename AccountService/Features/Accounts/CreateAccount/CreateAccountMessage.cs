@@ -3,4 +3,4 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.CreateAccount;
 
-public record CreateAccountCommand(CreateAccountResponseDto CreateAccountResponseDto) : ICommand<Unit>;
+public record CreateAccountMessage(CreateAccountResponseDto CreateAccountResponseDto) : IMessage<Unit>;

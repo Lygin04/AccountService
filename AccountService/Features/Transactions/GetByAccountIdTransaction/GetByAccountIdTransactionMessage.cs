@@ -3,4 +3,4 @@ using AccountService.Features.Transactions.Models;
 
 namespace AccountService.Features.Transactions.GetByAccountIdTransaction;
 
-public record GetByAccountIdTransactionQuery(Guid AccountId) : IQuery<List<Transaction>?>;
+public record GetByAccountIdTransactionMessage(Guid AccountId) : IMessage<List<Transaction>?>;

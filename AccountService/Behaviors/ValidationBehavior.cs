@@ -6,7 +6,7 @@ using MediatR;
 namespace AccountService.Behaviors;
 
 public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators) 
-    : IPipelineBehavior<TRequest, TResponse> where TRequest : class, ICommand<TResponse>
+    : IPipelineBehavior<TRequest, TResponse> where TRequest : class, IMessage<TResponse>
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)

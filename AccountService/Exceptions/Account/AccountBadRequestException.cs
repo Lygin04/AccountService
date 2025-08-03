@@ -1,6 +1,6 @@
 ﻿using AccountService.Exceptions.Shared;
 
-namespace AccountService.Features.Accounts;
+namespace AccountService.Exceptions.Account;
 
 public class AccountBadRequestException(string message) : BadRequestException(message)
 {

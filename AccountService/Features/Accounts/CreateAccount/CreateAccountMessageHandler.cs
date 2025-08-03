@@ -1,4 +1,5 @@
 ﻿using AccountService.Common.Abstractions;
+using AccountService.Exceptions.Account;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
 using AccountService.Infrastructure.Repositories.Interfaces;
@@ -6,12 +7,12 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.CreateAccount;
 
-public class CreateAccountCommandHandler(
+public class CreateAccountMessageHandler(
     IFakeDataStorage fakeDataStorage,
     IClientVerificationService clientVerification,
-    ICurrencyService currencyService) : ICommandHandler<CreateAccountCommand, Unit>
+    ICurrencyService currencyService) : IMessageHandler<CreateAccountMessage, Unit>
 {
-    public async Task<Unit> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CreateAccountMessage request, CancellationToken cancellationToken)
     {
         if (!clientVerification.ClientExists(request.CreateAccountResponseDto.OwnerId))
             throw AccountNotFoundException.WithSuchOwnerId(request.CreateAccountResponseDto.OwnerId);
@@ -28,7 +29,7 @@ public class CreateAccountCommandHandler(
             Currency = request.CreateAccountResponseDto.Currency,
             Balance = request.CreateAccountResponseDto.Balance,
             InterestRate = request.CreateAccountResponseDto.InterestRate,
-            OpenDate = DateTime.Now
+            OpenDate = DateTime.UtcNow
         };
 
         await fakeDataStorage.AddAccountAsync(account);

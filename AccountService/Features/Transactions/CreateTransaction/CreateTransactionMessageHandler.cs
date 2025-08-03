@@ -1,14 +1,14 @@
 ﻿using AccountService.Common.Abstractions;
-using AccountService.Features.Accounts;
+using AccountService.Exceptions.Account;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Repositories.Interfaces;
 using MediatR;
 
 namespace AccountService.Features.Transactions.CreateTransaction;
 
-public class CreateTransactionCommandHandler(IFakeDataStorage fakeDataStorage) : ICommandHandler<CreateTransactionCommand, Unit>
+public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) : IMessageHandler<CreateTransactionMessage, Unit>
 {
-    public async Task<Unit> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
         var transaction = new Transaction
         {
@@ -19,7 +19,7 @@ public class CreateTransactionCommandHandler(IFakeDataStorage fakeDataStorage) :
             Currency = request.TransactionDto.Currency,
             Type = request.TransactionDto.Type,
             Description = request.TransactionDto.Description,
-            Timestamp = DateTime.Now
+            Timestamp = DateTime.UtcNow
         };
         
         var account = await fakeDataStorage.GetAccountByIdAsync(transaction.AccountId);

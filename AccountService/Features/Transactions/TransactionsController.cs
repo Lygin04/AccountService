@@ -20,7 +20,7 @@ public class TransactionsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(TransactionDto transactionDto)
     {
-        await mediator.Send(new CreateTransactionCommand(transactionDto));
+        await mediator.Send(new CreateTransactionMessage(transactionDto));
         
         return Created();
     }
@@ -35,7 +35,7 @@ public class TransactionsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByAccountId(Guid accountId)
     {
-        var transactions = await mediator.Send(new GetByAccountIdTransactionQuery(accountId));
+        var transactions = await mediator.Send(new GetByAccountIdTransactionMessage(accountId));
         
         return Ok(transactions);
     }

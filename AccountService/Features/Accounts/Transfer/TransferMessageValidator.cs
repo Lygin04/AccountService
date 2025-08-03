@@ -2,9 +2,9 @@
 
 namespace AccountService.Features.Accounts.Transfer;
 
-public class TransferCommandValidator: AbstractValidator<TransferCommand>
+public class TransferMessageValidator: AbstractValidator<TransferMessage>
 {
-    public TransferCommandValidator()
+    public TransferMessageValidator()
     {
         RuleFor(x => x.TransferDto.AccountId)
             .NotEmpty();

@@ -25,7 +25,7 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(CreateAccountResponseDto createAccountResponseDto)
     {
-        await mediator.Send(new CreateAccountCommand(createAccountResponseDto));
+        await mediator.Send(new CreateAccountMessage(createAccountResponseDto));
 
         return Created();
     }
@@ -42,7 +42,7 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(Guid accountId, UpdateAccountResponseDto accountDto)
     {
-        await mediator.Send(new UpdateAccountCommand(accountId, accountDto));
+        await mediator.Send(new UpdateAccountMessage(accountId, accountDto));
 
         return NoContent();
     }
@@ -57,7 +57,7 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid accountId)
     {
-        await mediator.Send(new DeleteAccountCommand(accountId));
+        await mediator.Send(new DeleteAccountMessage(accountId));
 
         return NoContent();
     }
@@ -72,7 +72,7 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid accountId)
     {
-        var account = await mediator.Send(new GetAccountQuery(accountId));
+        var account = await mediator.Send(new GetAccountMessage(accountId));
 
         if (account == null)
             return NotFound();
@@ -90,7 +90,7 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByOwnerId(Guid ownerId)
     {
-        var accounts = await mediator.Send(new GetAccountsByOwnerIdQuery(ownerId));
+        var accounts = await mediator.Send(new GetAccountsByOwnerIdMessage(ownerId));
         
         return Ok(accounts);
     }
@@ -106,7 +106,7 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Transfer(TransferResponseDto transferDto)
     {
-        await mediator.Send(new TransferCommand(transferDto));
+        await mediator.Send(new TransferMessage(transferDto));
         
         return Created();
     }

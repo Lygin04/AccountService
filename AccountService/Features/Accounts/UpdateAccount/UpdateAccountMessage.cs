@@ -3,4 +3,4 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.UpdateAccount;
 
-public record UpdateAccountCommand(Guid AccountId, UpdateAccountResponseDto AccountDto) : ICommand<Unit>;
+public record UpdateAccountMessage(Guid AccountId, UpdateAccountResponseDto AccountDto) : IMessage<Unit>;
