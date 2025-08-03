@@ -29,7 +29,7 @@ public class CreateAccountMessageHandler(
             Currency = request.CreateAccountResponseDto.Currency,
             Balance = request.CreateAccountResponseDto.Balance,
             InterestRate = request.CreateAccountResponseDto.InterestRate,
-            OpenDate = DateTime.Now
+            OpenDate = DateTime.UtcNow
         };
 
         await fakeDataStorage.AddAccountAsync(account);

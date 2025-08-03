@@ -19,7 +19,7 @@ public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) :
             Currency = request.TransactionDto.Currency,
             Type = request.TransactionDto.Type,
             Description = request.TransactionDto.Description,
-            Timestamp = DateTime.Now
+            Timestamp = DateTime.UtcNow
         };
         
         var account = await fakeDataStorage.GetAccountByIdAsync(transaction.AccountId);

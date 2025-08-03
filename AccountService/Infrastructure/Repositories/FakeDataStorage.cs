@@ -19,7 +19,7 @@ public class FakeDataStorage : IFakeDataStorage
             Type = AccountType.Checking,
             Currency = IsoCurrency.Rub,
             Balance = 15000.50m,
-            OpenDate = DateTime.Now.AddMonths(-6),
+            OpenDate = DateTime.UtcNow.AddMonths(-6),
             Transactions = []
         };
 
@@ -31,7 +31,7 @@ public class FakeDataStorage : IFakeDataStorage
             Currency = IsoCurrency.Usd,
             Balance = 3200.75m,
             InterestRate = 15.5m,
-            OpenDate = DateTime.Now.AddYears(-1),
+            OpenDate = DateTime.UtcNow.AddYears(-1),
             Transactions = []
         };
 
@@ -43,7 +43,7 @@ public class FakeDataStorage : IFakeDataStorage
             Currency = IsoCurrency.Eur,
             Balance = 5000m,
             InterestRate = 5.5m,
-            OpenDate = DateTime.Now.AddMonths(-12),
+            OpenDate = DateTime.UtcNow.AddMonths(-12),
             Transactions = []
         };
 
@@ -60,7 +60,7 @@ public class FakeDataStorage : IFakeDataStorage
                 Currency = IsoCurrency.Rub,
                 Type = TransactionType.Debit,
                 Description = "Перевод на кредитный счёт",
-                Timestamp = DateTime.Now.AddDays(-2)
+                Timestamp = DateTime.UtcNow.AddDays(-2)
             },
             new Transaction
             {
@@ -71,7 +71,7 @@ public class FakeDataStorage : IFakeDataStorage
                 Currency = IsoCurrency.Usd,
                 Type = TransactionType.Credit,
                 Description = "Погашение кредита",
-                Timestamp = DateTime.Now.AddDays(-1)
+                Timestamp = DateTime.UtcNow.AddDays(-1)
             },
             new Transaction
             {
@@ -82,7 +82,7 @@ public class FakeDataStorage : IFakeDataStorage
                 Currency = IsoCurrency.Eur,
                 Type = TransactionType.Debit,
                 Description = "Пополнение депозита",
-                Timestamp = DateTime.Now.AddDays(-5)
+                Timestamp = DateTime.UtcNow.AddDays(-5)
             }
         ];
 
