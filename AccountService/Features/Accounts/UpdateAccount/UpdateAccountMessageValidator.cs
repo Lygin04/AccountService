@@ -2,9 +2,9 @@
 
 namespace AccountService.Features.Accounts.UpdateAccount;
 
-public sealed class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountCommand>
+public sealed class UpdateAccountMessageValidator : AbstractValidator<UpdateAccountMessage>
 {
-    public UpdateAccountCommandValidator()
+    public UpdateAccountMessageValidator()
     {
         RuleFor(x => x.AccountDto.Balance)
             .NotEmpty();

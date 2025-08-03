@@ -7,12 +7,12 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.CreateAccount;
 
-public class CreateAccountCommandHandler(
+public class CreateAccountMessageHandler(
     IFakeDataStorage fakeDataStorage,
     IClientVerificationService clientVerification,
-    ICurrencyService currencyService) : ICommandHandler<CreateAccountCommand, Unit>
+    ICurrencyService currencyService) : IMessageHandler<CreateAccountMessage, Unit>
 {
-    public async Task<Unit> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CreateAccountMessage request, CancellationToken cancellationToken)
     {
         if (!clientVerification.ClientExists(request.CreateAccountResponseDto.OwnerId))
             throw AccountNotFoundException.WithSuchOwnerId(request.CreateAccountResponseDto.OwnerId);

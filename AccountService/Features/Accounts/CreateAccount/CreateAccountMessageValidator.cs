@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace AccountService.Features.Accounts.CreateAccount;
 
-public sealed class CreateAccountCommandValidator : AbstractValidator<CreateAccountCommand>
+public sealed class CreateAccountMessageValidator : AbstractValidator<CreateAccountMessage>
 {
-    public CreateAccountCommandValidator()
+    public CreateAccountMessageValidator()
     {
         RuleFor(x => x.CreateAccountResponseDto.OwnerId)
             .NotNull()

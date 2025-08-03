@@ -6,9 +6,9 @@ using MediatR;
 
 namespace AccountService.Features.Transactions.CreateTransaction;
 
-public class CreateTransactionCommandHandler(IFakeDataStorage fakeDataStorage) : ICommandHandler<CreateTransactionCommand, Unit>
+public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) : IMessageHandler<CreateTransactionMessage, Unit>
 {
-    public async Task<Unit> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
         var transaction = new Transaction
         {

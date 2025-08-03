@@ -3,4 +3,4 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.DeleteAccount;
 
-public record DeleteAccountCommand(Guid Id) : ICommand<Unit>;
+public record DeleteAccountMessage(Guid Id) : IMessage<Unit>;

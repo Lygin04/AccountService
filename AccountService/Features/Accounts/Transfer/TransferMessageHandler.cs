@@ -8,9 +8,9 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.Transfer;
 
-public class TransferCommandHandler(IFakeDataStorage fakeDataStorage, IMediator mediator) : ICommandHandler<TransferCommand, Unit>
+public class TransferMessageHandler(IFakeDataStorage fakeDataStorage, IMediator mediator) : IMessageHandler<TransferMessage, Unit>
 {
-    public async Task<Unit> Handle(TransferCommand request, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(TransferMessage request, CancellationToken cancellationToken)
     {
         var account = await fakeDataStorage.GetAccountByIdAsync(request.TransferDto.AccountId);
         var counterpartyAccount = await fakeDataStorage.GetAccountByIdAsync(request.TransferDto.CounterpartyAccountId);
@@ -55,7 +55,7 @@ public class TransferCommandHandler(IFakeDataStorage fakeDataStorage, IMediator 
             Description = $"Получил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}"
         };
         
-        await mediator.Send(new CreateTransactionCommand(transaction), cancellationToken);
+        await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
 
         transaction.AccountId = counterpartyAccount.Id;
         transaction.CounterpartyAccountId = account.Id;
@@ -63,7 +63,7 @@ public class TransferCommandHandler(IFakeDataStorage fakeDataStorage, IMediator 
         transaction.Description =
             $"Отправил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}";
         
-        await mediator.Send(new CreateTransactionCommand(transaction), cancellationToken);
+        await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
             
         return Unit.Value;
     }

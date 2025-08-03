@@ -3,4 +3,4 @@ using MediatR;
 
 namespace AccountService.Features.Accounts.Transfer;
 
-public record TransferCommand(TransferResponseDto TransferDto) : ICommand<Unit>;
+public record TransferMessage(TransferResponseDto TransferDto) : IMessage<Unit>;
