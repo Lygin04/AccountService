@@ -23,6 +23,8 @@ builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 builder.Services.AddSingleton<IFakeDataStorage, FakeDataStorage>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
+ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddControllers();
 
