@@ -4,4 +4,12 @@
     build:
       context: .
       dockerfile: AccountService/Dockerfile
-
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      restart: always
+      ports:
+        8080:8080
+        
+networks:
+  backend:
+    driver: bridge
