@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AccountService.Common;
 using AccountService.Exceptions;
 using AccountService.Exceptions.Shared;
 
@@ -15,48 +16,66 @@ internal sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddl
         catch (Exception e)
         {
             logger.LogError(e, e.Message);
-
             await HandleExceptionAsync(context, e);
         }
     }
 
     private static async Task HandleExceptionAsync(HttpContext httpContext, Exception exception)
     {
-        var statusCode = GetStatusCode(exception);
+        var (statusCode, mbError) = GetMbError(exception);
 
-        var response = new
-        {
-            title = "Server error",
-            status = statusCode,
-            detail = exception.Message,
-            errors = GetErrors(exception)
-        };
+        var response = MbResult<object>.Failure(mbError);
 
         httpContext.Response.ContentType = "application/json";
-
         httpContext.Response.StatusCode = statusCode;
 
-        await httpContext.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await httpContext.Response.WriteAsync(JsonSerializer.Serialize(new
+        {
+            response.IsSuccess,
+            response.Error.Title,
+            response.Error.Status,
+            response.Error.Detail,
+            response.Error.Errors
+        }));
     }
 
-    private static int GetStatusCode(Exception exception) =>
-        exception switch
-        {
-            ValidationAppException => StatusCodes.Status422UnprocessableEntity,
-            BadRequestException => StatusCodes.Status400BadRequest,
-            NotFoundException => StatusCodes.Status404NotFound,
-            _ => StatusCodes.Status500InternalServerError
-        };
-
-    private static IReadOnlyDictionary<string, string[]> GetErrors(Exception exception)
+    private static (int StatusCode, MbError MbError) GetMbError(Exception exception)
     {
-        IReadOnlyDictionary<string, string[]> errors = null!;
-
-        if (exception is ValidationAppException validationException)
+        return exception switch
         {
-            errors = validationException.Errors;
-        }
-
-        return errors;
+            ValidationAppException validationException => (
+                StatusCodes.Status422UnprocessableEntity,
+                new MbError(
+                    title: "Validation Error",
+                    status: StatusCodes.Status422UnprocessableEntity,
+                    detail: validationException.Message,
+                    errors: validationException.Errors
+                )
+            ),
+            BadRequestException badRequest => (
+                StatusCodes.Status400BadRequest,
+                new MbError(
+                    title: "Bad Request",
+                    status: StatusCodes.Status400BadRequest,
+                    detail: badRequest.Message
+                )
+            ),
+            NotFoundException notFound => (
+                StatusCodes.Status404NotFound,
+                new MbError(
+                    title: "Not Found",
+                    status: StatusCodes.Status404NotFound,
+                    detail: notFound.Message
+                )
+            ),
+            _ => (
+                StatusCodes.Status500InternalServerError,
+                new MbError(
+                    title: "Server Error",
+                    status: StatusCodes.Status500InternalServerError,
+                    detail: exception.Message
+                )
+            )
+        };
     }
 }

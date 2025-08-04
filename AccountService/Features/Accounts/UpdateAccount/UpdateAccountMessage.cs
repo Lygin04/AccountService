@@ -1,6 +1,7 @@
-﻿using AccountService.Common.Abstractions;
+﻿using AccountService.Common;
+using AccountService.Common.Abstractions;
 using MediatR;
 
 namespace AccountService.Features.Accounts.UpdateAccount;
 
-public record UpdateAccountMessage(Guid AccountId, UpdateAccountResponseDto AccountDto) : IMessage<Unit>;
+public record UpdateAccountMessage(Guid AccountId, UpdateAccountResponseDto AccountDto) : IMessage<MbResult<Unit>>;

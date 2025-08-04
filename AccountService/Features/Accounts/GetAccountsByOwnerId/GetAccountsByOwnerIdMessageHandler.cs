@@ -1,4 +1,5 @@
-﻿using AccountService.Common.Abstractions;
+﻿using AccountService.Common;
+using AccountService.Common.Abstractions;
 using AccountService.Exceptions.Account;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
@@ -8,14 +9,20 @@ namespace AccountService.Features.Accounts.GetAccountsByOwnerId;
 
 public class GetAccountsByOwnerIdMessageHandler(
     IFakeDataStorage fakeDataStorage,
-    IClientVerificationService clientVerification) : IMessageHandler<GetAccountsByOwnerIdMessage, List<Account>>
+    IClientVerificationService clientVerification) : IMessageHandler<GetAccountsByOwnerIdMessage, MbResult<List<Account>>>
 {
-    public async Task<List<Account>> Handle(GetAccountsByOwnerIdMessage request, CancellationToken cancellationToken)
+    public async Task<MbResult<List<Account>>> Handle(GetAccountsByOwnerIdMessage request, CancellationToken cancellationToken)
     {
         if (!clientVerification.ClientExists(request.OwnerId))
-            throw AccountNotFoundException.WithSuchOwnerId(request.OwnerId);
+        {
+            return MbResult<List<Account>>.Failure(new MbError(
+                title: "Not Found",
+                status: StatusCodes.Status404NotFound,
+                detail: $"Client with OwnerId {request.OwnerId} not found"
+            ));
+        }
 
         var accounts = await fakeDataStorage.GetAccountByOwnerIdAsync(request.OwnerId);
-        return accounts;
+        return MbResult<List<Account>>.Success(accounts);
     }
 }
