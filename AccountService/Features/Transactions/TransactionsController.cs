@@ -2,7 +2,6 @@
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.GetByAccountIdTransaction;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Features.Transactions;

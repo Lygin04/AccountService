@@ -8,7 +8,7 @@ public class Account
     /// <summary>
     /// Идентификатор счета.
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
     
     /// <summary>
     /// Идентификатор владельца счета.

@@ -9,6 +9,7 @@ public static class ConfigurationExtensions
     /// Добавляет поддержку Swagger с авторизацией в коллекцию сервисов.
     /// </summary>
     /// <param name="services">Коллекция сервисов.</param>
+    /// <param name="configuration">Конфигурационные настройки.</param>
     public static void AddSwaggerWithAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSwaggerGen(options =>

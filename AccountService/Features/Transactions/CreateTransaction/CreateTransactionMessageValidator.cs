@@ -2,17 +2,18 @@
 
 namespace AccountService.Features.Transactions.CreateTransaction;
 
+// ReSharper disable once UnusedType.Global
 public class CreateTransactionMessageValidator : AbstractValidator<CreateTransactionMessage>
 {
     public CreateTransactionMessageValidator()
     {
         RuleFor(x => x.TransactionDto.AccountId)
             .NotEmpty()
-            .NotEqual(Guid.Empty);;
+            .NotEqual(Guid.Empty);
         
         RuleFor(x => x.TransactionDto.CounterpartyAccountId)
             .NotEmpty()
-            .NotEqual(Guid.Empty);;
+            .NotEqual(Guid.Empty);
         
         RuleFor(x => x.TransactionDto.Amount)
             .NotEmpty()

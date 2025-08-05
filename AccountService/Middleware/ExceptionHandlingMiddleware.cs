@@ -15,7 +15,7 @@ internal sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddl
         }
         catch (Exception e)
         {
-            logger.LogError(e, e.Message);
+            logger.LogError(e, "Unhandled exception occurred: {Message}", e.Message);
             await HandleExceptionAsync(context, e);
         }
     }
@@ -32,10 +32,10 @@ internal sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddl
         await httpContext.Response.WriteAsync(JsonSerializer.Serialize(new
         {
             response.IsSuccess,
-            response.Error.Title,
-            response.Error.Status,
-            response.Error.Detail,
-            response.Error.Errors
+            response.Error!.Title,
+            response.Error!.Status,
+            response.Error!.Detail,
+            response.Error!.Errors
         }));
     }
 

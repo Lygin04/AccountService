@@ -7,40 +7,44 @@ public class Transaction
     /// <summary>
     /// Идентификатор транзакции.
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
     
     /// <summary>
     /// Идентификатор счета.
     /// </summary>
-    public Guid AccountId { get; set; }
+    public Guid AccountId { get; init; }
 
     /// <summary>
     /// Идентификатор счета контрагента.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public Guid CounterpartyAccountId { get; set; }
     
     /// <summary>
     /// Сумма.
     /// </summary>
-    public decimal Amount { get; set; }
+    public decimal Amount { get; init; }
     
     /// <summary>
     /// Валюта.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public IsoCurrency Currency { get; set; }
     
     /// <summary>
     /// Тип (Credit | Debit).
     /// </summary>
-    public TransactionType Type { get; set; }
+    public TransactionType Type { get; init; }
     
     /// <summary>
     /// Описание.
     /// </summary>
-    public string Description { get; set; }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public string Description { get; set; } = string.Empty;
     
     /// <summary>
     /// Дата/Время.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public DateTime Timestamp { get; set; }
 }

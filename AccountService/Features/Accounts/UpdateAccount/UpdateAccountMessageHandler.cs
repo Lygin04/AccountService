@@ -1,6 +1,5 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
-using AccountService.Exceptions.Account;
 using AccountService.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using MediatR;

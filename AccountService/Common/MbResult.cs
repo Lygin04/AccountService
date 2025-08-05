@@ -20,6 +20,6 @@ public class MbResult<T>
         Error = error;
     }
 
-    public static MbResult<T> Success(T data) => new MbResult<T>(data);
-    public static MbResult<T> Failure(MbError error) => new MbResult<T>(error);
+    public static MbResult<T> Success(T data) => new(data);
+    public static MbResult<T> Failure(MbError error) => new(error);
 }

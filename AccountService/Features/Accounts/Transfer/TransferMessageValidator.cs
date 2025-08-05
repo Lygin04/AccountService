@@ -2,6 +2,7 @@
 
 namespace AccountService.Features.Accounts.Transfer;
 
+// ReSharper disable once UnusedType.Global
 public class TransferMessageValidator: AbstractValidator<TransferMessage>
 {
     public TransferMessageValidator()
