@@ -1,13 +1,12 @@
-﻿using AccountService.Features.Transactions.CreateTransaction;
+﻿using AccountService.Common;
+using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.GetByAccountIdTransaction;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Features.Transactions;
 
-[ApiController]
-[Route("v1/[controller]")]
-public class TransactionsController(IMediator mediator) : ControllerBase
+public class TransactionsController(IMediator mediator) : ApiControllerV1WithAuth
 {
     /// <summary>
     /// Создает транзакцию из внешнего сервиса.
@@ -20,9 +19,11 @@ public class TransactionsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(TransactionDto transactionDto)
     {
-        await mediator.Send(new CreateTransactionMessage(transactionDto));
+        var result = await mediator.Send(new CreateTransactionMessage(transactionDto));
         
-        return Created();
+        return result.IsSuccess
+            ? Created("", new { result.IsSuccess, result.Data, result.Error })
+            : ToActionResult(result);
     }
 
     /// <summary>
@@ -35,8 +36,8 @@ public class TransactionsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByAccountId(Guid accountId)
     {
-        var transactions = await mediator.Send(new GetByAccountIdTransactionMessage(accountId));
+        var result = await mediator.Send(new GetByAccountIdTransactionMessage(accountId));
         
-        return Ok(transactions);
+        return ToActionResult(result);
     }
 }

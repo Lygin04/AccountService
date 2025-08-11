@@ -1,43 +1,78 @@
-﻿using AccountService.Common.Abstractions;
-using AccountService.Exceptions.Account;
+﻿using AccountService.Common;
+using AccountService.Common.Abstractions;
 using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Repositories.Interfaces;
+using FluentValidation;
 using MediatR;
 
 namespace AccountService.Features.Accounts.Transfer;
 
-public class TransferMessageHandler(IFakeDataStorage fakeDataStorage, IMediator mediator) : IMessageHandler<TransferMessage, Unit>
+public class TransferMessageHandler(
+    IFakeDataStorage fakeDataStorage,
+    IMediator mediator,
+    IValidator<TransferMessage> validator) : IMessageHandler<TransferMessage, MbResult<Unit>>
 {
-    public async Task<Unit> Handle(TransferMessage request, CancellationToken cancellationToken)
+    public async Task<MbResult<Unit>> Handle(TransferMessage request, CancellationToken cancellationToken)
     {
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Validation Error",
+                status: StatusCodes.Status422UnprocessableEntity,
+                detail: "Validation failed",
+                errors: errors
+            ));
+        }
+        
         var account = await fakeDataStorage.GetAccountByIdAsync(request.TransferDto.AccountId);
         var counterpartyAccount = await fakeDataStorage.GetAccountByIdAsync(request.TransferDto.CounterpartyAccountId);
 
-        if(account == null)
-            throw AccountNotFoundException.WithSuchId(request.TransferDto.AccountId);
-        
-        if(counterpartyAccount == null)
-            throw AccountNotFoundException.WithSuchId(request.TransferDto.CounterpartyAccountId);
+        if (account == null)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Not Found",
+                status: StatusCodes.Status404NotFound,
+                detail: $"Account with ID {request.TransferDto.AccountId} not found"
+            ));
+        }
+
+        if (counterpartyAccount == null)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Not Found",
+                status: StatusCodes.Status404NotFound,
+                detail: $"Counterparty account with ID {request.TransferDto.CounterpartyAccountId} not found"
+            ));
+        }
         
         if (request.TransferDto.Type == TransactionType.Debit)
         {
             account.Balance += request.TransferDto.Amount;
             if (counterpartyAccount.Balance - request.TransferDto.Amount < 0)
-                throw AccountBadRequestException.InsufficientFundsException(
-                    counterpartyAccount.Id,
-                    counterpartyAccount.Balance,
-                    request.TransferDto.Amount);
+            {   return MbResult<Unit>.Failure(new MbError(
+                    title: "Bad Request",
+                    status: StatusCodes.Status400BadRequest,
+                    detail: $"Insufficient funds on account {counterpartyAccount.Id}. Balance: {counterpartyAccount.Balance}, Requested: {request.TransferDto.Amount}"
+                ));
+            }
             counterpartyAccount.Balance -= request.TransferDto.Amount;
         }
         else
         {
             if (account.Balance - request.TransferDto.Amount < 0)
-                throw AccountBadRequestException.InsufficientFundsException(
-                    account.Id,
-                    account.Balance,
-                    request.TransferDto.Amount);
+            {   return MbResult<Unit>.Failure(new MbError(
+                    title: "Bad Request",
+                    status: StatusCodes.Status400BadRequest,
+                    detail: $"Insufficient funds on account {account.Id}. Balance: {account.Balance}, Requested: {request.TransferDto.Amount}"
+                ));
+            }
             account.Balance -= request.TransferDto.Amount;
             counterpartyAccount.Balance += request.TransferDto.Amount;
         }
@@ -65,6 +100,6 @@ public class TransferMessageHandler(IFakeDataStorage fakeDataStorage, IMediator 
         
         await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
             
-        return Unit.Value;
+        return MbResult<Unit>.Success(Unit.Value);
     }
 }

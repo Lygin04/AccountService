@@ -1,4 +1,5 @@
-﻿namespace AccountService.Features.Accounts.UpdateAccount;
+﻿// ReSharper disable UnusedAutoPropertyAccessor.Global
+namespace AccountService.Features.Accounts.UpdateAccount;
 
 public class UpdateAccountResponseDto
 {

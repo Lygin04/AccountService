@@ -1,4 +1,5 @@
-﻿using AccountService.Features.Accounts.CreateAccount;
+﻿using AccountService.Common;
+using AccountService.Features.Accounts.CreateAccount;
 using AccountService.Features.Accounts.DeleteAccount;
 using AccountService.Features.Accounts.GetAccount;
 using AccountService.Features.Accounts.GetAccountsByOwnerId;
@@ -9,9 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Features.Accounts;
 
-[ApiController]
-[Route("v1/[controller]")]
-public class AccountsController(IMediator mediator) : ControllerBase
+public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
 {
     /// <summary>
     /// Создаёт новый счёт.
@@ -25,9 +24,11 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(CreateAccountResponseDto createAccountResponseDto)
     {
-        await mediator.Send(new CreateAccountMessage(createAccountResponseDto));
+        var result = await mediator.Send(new CreateAccountMessage(createAccountResponseDto));
 
-        return Created();
+        return result.IsSuccess
+            ? Created("", new { result.IsSuccess, result.Data, result.Error })
+            : ToActionResult(result);
     }
 
     /// <summary>
@@ -42,9 +43,9 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(Guid accountId, UpdateAccountResponseDto accountDto)
     {
-        await mediator.Send(new UpdateAccountMessage(accountId, accountDto));
-
-        return NoContent();
+        var result = await mediator.Send(new UpdateAccountMessage(accountId, accountDto));
+        
+        return ToActionResult(result);
     }
 
     /// <summary>
@@ -57,9 +58,9 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid accountId)
     {
-        await mediator.Send(new DeleteAccountMessage(accountId));
+        var result = await mediator.Send(new DeleteAccountMessage(accountId));
 
-        return NoContent();
+        return ToActionResult(result);
     }
 
     /// <summary>
@@ -72,12 +73,9 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid accountId)
     {
-        var account = await mediator.Send(new GetAccountMessage(accountId));
-
-        if (account == null)
-            return NotFound();
-
-        return Ok(account);
+        var result = await mediator.Send(new GetAccountMessage(accountId));
+        
+        return ToActionResult(result);
     }
 
     /// <summary>
@@ -90,9 +88,9 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByOwnerId(Guid ownerId)
     {
-        var accounts = await mediator.Send(new GetAccountsByOwnerIdMessage(ownerId));
+        var result = await mediator.Send(new GetAccountsByOwnerIdMessage(ownerId));
         
-        return Ok(accounts);
+        return ToActionResult(result);
     }
 
     /// <summary>
@@ -106,8 +104,10 @@ public class AccountsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Transfer(TransferResponseDto transferDto)
     {
-        await mediator.Send(new TransferMessage(transferDto));
+        var result = await mediator.Send(new TransferMessage(transferDto));
         
-        return Created();
+        return result.IsSuccess
+            ? Created("", new { result.IsSuccess, result.Data, result.Error })
+            : ToActionResult(result);
     }
 }

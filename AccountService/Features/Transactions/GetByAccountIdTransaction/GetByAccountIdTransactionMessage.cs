@@ -1,6 +1,7 @@
-﻿using AccountService.Common.Abstractions;
+﻿using AccountService.Common;
+using AccountService.Common.Abstractions;
 using AccountService.Features.Transactions.Models;
 
 namespace AccountService.Features.Transactions.GetByAccountIdTransaction;
 
-public record GetByAccountIdTransactionMessage(Guid AccountId) : IMessage<List<Transaction>?>;
+public record GetByAccountIdTransactionMessage(Guid AccountId) : IMessage<MbResult<List<Transaction>>>;

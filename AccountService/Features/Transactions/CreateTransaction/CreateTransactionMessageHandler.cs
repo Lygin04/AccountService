@@ -1,15 +1,33 @@
-﻿using AccountService.Common.Abstractions;
-using AccountService.Exceptions.Account;
+﻿using AccountService.Common;
+using AccountService.Common.Abstractions;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Repositories.Interfaces;
+using FluentValidation;
 using MediatR;
 
 namespace AccountService.Features.Transactions.CreateTransaction;
 
-public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) : IMessageHandler<CreateTransactionMessage, Unit>
+public class CreateTransactionMessageHandler(
+    IFakeDataStorage fakeDataStorage,
+    IValidator<CreateTransactionMessage> validator) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
 {
-    public async Task<Unit> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
+    public async Task<MbResult<Unit>> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Validation Error",
+                status: StatusCodes.Status422UnprocessableEntity,
+                detail: "Validation failed",
+                errors: errors
+            ));
+        }
+        
         var transaction = new Transaction
         {
             Id = Guid.NewGuid(),
@@ -24,7 +42,13 @@ public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) :
         
         var account = await fakeDataStorage.GetAccountByIdAsync(transaction.AccountId);
         if (account == null)
-            throw AccountNotFoundException.WithSuchId(transaction.AccountId);
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Not Found",
+                status: StatusCodes.Status404NotFound,
+                detail: $"Account with ID {transaction.AccountId} not found"
+            ));
+        }
 
         if (transaction.Type == TransactionType.Debit)
         {
@@ -33,8 +57,13 @@ public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) :
         else
         {
             if (account.Balance - transaction.Amount < 0)
-                throw AccountBadRequestException.InsufficientFundsException(account.Id, account.Balance,
-                    transaction.Amount);
+            {
+                return MbResult<Unit>.Failure(new MbError(
+                    title: "Bad Request",
+                    status: StatusCodes.Status400BadRequest,
+                    detail: $"Insufficient funds on account {account.Id}. Balance: {account.Balance}, Requested: {transaction.Amount}"
+                ));
+            }
             account.Balance -= transaction.Amount;
         }
 
@@ -42,6 +71,6 @@ public class CreateTransactionMessageHandler(IFakeDataStorage fakeDataStorage) :
 
         await fakeDataStorage.AddTransactionAsync(transaction);
         
-        return Unit.Value;
+        return MbResult<Unit>.Success(Unit.Value);
     }
 }

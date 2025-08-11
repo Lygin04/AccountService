@@ -18,12 +18,12 @@ public class TransactionDto
     /// <summary>
     /// Сумма.
     /// </summary>
-    public decimal Amount { get; set; }
+    public decimal Amount { get; init; }
     
     /// <summary>
     /// Валюта.
     /// </summary>
-    public IsoCurrency Currency { get; set; }
+    public IsoCurrency Currency { get; init; }
     
     /// <summary>
     /// Тип транзакции.

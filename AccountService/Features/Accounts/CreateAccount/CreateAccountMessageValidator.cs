@@ -3,6 +3,7 @@ using FluentValidation;
 
 namespace AccountService.Features.Accounts.CreateAccount;
 
+// ReSharper disable once UnusedType.Global
 public sealed class CreateAccountMessageValidator : AbstractValidator<CreateAccountMessage>
 {
     public CreateAccountMessageValidator()
