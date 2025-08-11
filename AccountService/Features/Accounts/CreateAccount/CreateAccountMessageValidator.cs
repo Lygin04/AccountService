@@ -13,11 +13,9 @@ public sealed class CreateAccountMessageValidator : AbstractValidator<CreateAcco
             .NotEqual(Guid.Empty);
         
         RuleFor(x => x.CreateAccountResponseDto.Type)
-            .NotNull()
             .IsInEnum();
         
         RuleFor(x => x.CreateAccountResponseDto.Currency)
-            .NotNull()
             .IsInEnum();
 
         RuleFor(x => x.CreateAccountResponseDto.Balance)

@@ -1,12 +1,7 @@
-using AccountService.Behaviors;
 using AccountService.Extensions;
 using AccountService.Infrastructure.Clients;
 using AccountService.Infrastructure.Clients.Interfaces;
-using AccountService.Infrastructure.Repositories;
-using AccountService.Infrastructure.Repositories.Interfaces;
 using AccountService.Middleware;
-using FluentValidation;
-using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -16,19 +11,19 @@ var configuration = builder.Configuration;
 builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerWithAuth(configuration);
+
 builder.Services.AddJwtAuth(configuration);
 builder.Services.AddAuthorization();
 
+builder.Services.MigrateDatabase(configuration);
+builder.Services.AddDapper();
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
-builder.Services.AddSingleton<FakeDataStorage>();
+builder.Services.AddInfrastructure();
 builder.Services.AddSingleton<IClientVerificationService, ClientVerificationStub>();
 builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
-builder.Services.AddSingleton<IFakeDataStorage, FakeDataStorage>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
-ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddFluentValidation();
 builder.Services.AddControllers();
 
 var app = builder.Build();

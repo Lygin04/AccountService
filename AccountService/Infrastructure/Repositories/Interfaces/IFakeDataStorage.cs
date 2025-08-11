@@ -5,13 +5,13 @@ namespace AccountService.Infrastructure.Repositories.Interfaces;
 
 public interface IFakeDataStorage
 {
-    Task<Account?> GetAccountByIdAsync(Guid id);
-    Task<List<Account>> GetAccountByOwnerIdAsync(Guid ownerId);
-    Task<List<Transaction>> GetTransactionsByAccountIdAsync(Guid accountId);
+    Task<DbAccount?> GetAccountByIdAsync(Guid id);
+    Task<List<DbAccount>> GetAccountByOwnerIdAsync(Guid ownerId);
+    Task<List<DbTransaction>> GetTransactionsByAccountIdAsync(Guid accountId);
 
-    Task AddAccountAsync(Account account);
-    Task UpdateAccountAsync(Account account);
+    Task AddAccountAsync(DbAccount dbAccount);
+    Task UpdateAccountAsync(DbAccount dbAccount);
     Task DeleteAccountAsync(Guid accountId);
-    Task AddTransactionAsync(Transaction transaction);
+    Task AddTransactionAsync(DbTransaction dbTransaction);
     Task<bool> ExistsAccountAsync(Guid accountId);
 }

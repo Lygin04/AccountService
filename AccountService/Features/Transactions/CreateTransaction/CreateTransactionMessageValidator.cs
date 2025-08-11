@@ -20,11 +20,9 @@ public class CreateTransactionMessageValidator : AbstractValidator<CreateTransac
             .GreaterThan(0);
 
         RuleFor(x => x.TransactionDto.Currency)
-            .NotEmpty()
             .IsInEnum();
         
         RuleFor(x => x.TransactionDto.Type)
-            .NotEmpty()
             .IsInEnum();
 
         RuleFor(x => x.TransactionDto.Description)

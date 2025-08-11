@@ -1,14 +1,15 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
-using AccountService.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using MediatR;
 
 namespace AccountService.Features.Transactions.CreateTransaction;
 
 public class CreateTransactionMessageHandler(
-    IFakeDataStorage fakeDataStorage,
+    ITransactionRepository transactionRepository,
+    IAccountRepository accountRepository,
     IValidator<CreateTransactionMessage> validator) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
@@ -28,7 +29,7 @@ public class CreateTransactionMessageHandler(
             ));
         }
         
-        var transaction = new Transaction
+        var transaction = new DbTransaction
         {
             Id = Guid.NewGuid(),
             AccountId = request.TransactionDto.AccountId,
@@ -40,7 +41,7 @@ public class CreateTransactionMessageHandler(
             Timestamp = DateTime.UtcNow
         };
         
-        var account = await fakeDataStorage.GetAccountByIdAsync(transaction.AccountId);
+        var account = await accountRepository.GetByIdAsync(transaction.AccountId);
         if (account == null)
         {
             return MbResult<Unit>.Failure(new MbError(
@@ -69,7 +70,7 @@ public class CreateTransactionMessageHandler(
 
         account.Transactions ??= [];
 
-        await fakeDataStorage.AddTransactionAsync(transaction);
+        await transactionRepository.AddAsync(transaction);
         
         return MbResult<Unit>.Success(Unit.Value);
     }

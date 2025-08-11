@@ -7,12 +7,12 @@ namespace AccountService.Infrastructure.Repositories;
 
 public class FakeDataStorage : IFakeDataStorage
 {
-    private readonly List<Transaction> _transactions;
-    private readonly List<Account> _accounts;
+    private readonly List<DbTransaction> _transactions;
+    private readonly List<DbAccount> _accounts;
 
     public FakeDataStorage()
     {
-        var account1 = new Account
+        var account1 = new DbAccount
         {
             Id = Guid.Parse("0bb3945d-9108-4e95-9718-a09c9e621894"),
             OwnerId = Guid.NewGuid(),
@@ -23,7 +23,7 @@ public class FakeDataStorage : IFakeDataStorage
             Transactions = []
         };
 
-        var account2 = new Account
+        var account2 = new DbAccount
         {
             Id = Guid.Parse("3fa076cd-e65d-4aa1-869f-6c0419900658"),
             OwnerId = Guid.NewGuid(),
@@ -35,7 +35,7 @@ public class FakeDataStorage : IFakeDataStorage
             Transactions = []
         };
 
-        var account3 = new Account
+        var account3 = new DbAccount
         {
             Id = Guid.Parse("da739102-a7b4-409c-b163-6bd03a51a18a"),
             OwnerId = Guid.NewGuid(),
@@ -51,7 +51,7 @@ public class FakeDataStorage : IFakeDataStorage
 
         _transactions =
         [
-            new Transaction
+            new DbTransaction
             {
                 Id = Guid.Parse("f1d611f7-3484-4193-afad-91ae9ef95829"),
                 AccountId = account1.Id,
@@ -62,7 +62,7 @@ public class FakeDataStorage : IFakeDataStorage
                 Description = "Перевод на кредитный счёт",
                 Timestamp = DateTime.UtcNow.AddDays(-2)
             },
-            new Transaction
+            new DbTransaction
             {
                 Id = Guid.Parse("468a5c22-b77b-471f-ae84-eecb21cae33b"),
                 AccountId = account2.Id,
@@ -73,7 +73,7 @@ public class FakeDataStorage : IFakeDataStorage
                 Description = "Погашение кредита",
                 Timestamp = DateTime.UtcNow.AddDays(-1)
             },
-            new Transaction
+            new DbTransaction
             {
                 Id = Guid.Parse("258384df-f841-4810-960e-340eb605b40a"),
                 AccountId = account3.Id,
@@ -96,40 +96,40 @@ public class FakeDataStorage : IFakeDataStorage
     #region Queries
     //public async Task<List<Account>> GetAccountsAsync() => await Task.FromResult(_accounts);
 
-    public async Task<Account?> GetAccountByIdAsync(Guid id) =>
+    public async Task<DbAccount?> GetAccountByIdAsync(Guid id) =>
         await Task.FromResult(_accounts.FirstOrDefault(a => a.Id == id));
     
-    public async Task<List<Account>> GetAccountByOwnerIdAsync(Guid ownerId) =>
+    public async Task<List<DbAccount>> GetAccountByOwnerIdAsync(Guid ownerId) =>
         await Task.FromResult(_accounts.Where(x => x.OwnerId == ownerId).ToList());
 
     //public async Task<List<Transaction>> GetTransactionsAsync() => await Task.FromResult(_transactions);
 
-    public async Task<List<Transaction>> GetTransactionsByAccountIdAsync(Guid accountId) =>
+    public async Task<List<DbTransaction>> GetTransactionsByAccountIdAsync(Guid accountId) =>
         await Task.FromResult(_transactions.Where(t => t.AccountId == accountId).ToList());
     #endregion
 
     #region Commands
-    public async Task AddAccountAsync(Account account)
+    public async Task AddAccountAsync(DbAccount dbAccount)
     {
-        if (_accounts.All(a => a.Id != account.Id))
-            _accounts.Add(account);
+        if (_accounts.All(a => a.Id != dbAccount.Id))
+            _accounts.Add(dbAccount);
 
         await Task.CompletedTask;
     }
 
-    public async Task UpdateAccountAsync(Account account)
+    public async Task UpdateAccountAsync(DbAccount dbAccount)
     {
-        var existing = _accounts.FirstOrDefault(a => a.Id == account.Id);
+        var existing = _accounts.FirstOrDefault(a => a.Id == dbAccount.Id);
         if (existing != null)
         {
-            existing.OwnerId = account.OwnerId;
-            existing.Type = account.Type;
-            existing.Currency = account.Currency;
-            existing.Balance = account.Balance;
-            existing.InterestRate = account.InterestRate;
-            existing.OpenDate = account.OpenDate;
-            existing.CloseDate = account.CloseDate;
-            existing.Transactions = account.Transactions;
+            existing.OwnerId = dbAccount.OwnerId;
+            existing.Type = dbAccount.Type;
+            existing.Currency = dbAccount.Currency;
+            existing.Balance = dbAccount.Balance;
+            existing.InterestRate = dbAccount.InterestRate;
+            existing.OpenDate = dbAccount.OpenDate;
+            existing.CloseDate = dbAccount.CloseDate;
+            existing.Transactions = dbAccount.Transactions;
         }
 
         await Task.CompletedTask;
@@ -143,12 +143,12 @@ public class FakeDataStorage : IFakeDataStorage
         await Task.CompletedTask;
     }
 
-    public async Task AddTransactionAsync(Transaction transaction)
+    public async Task AddTransactionAsync(DbTransaction dbTransaction)
     {
-        if (_transactions.Any(t => t.Id == transaction.Id)) return;
-        _transactions.Add(transaction);
-        var account = _accounts.FirstOrDefault(a => a.Id == transaction.AccountId);
-        account?.Transactions?.Add(transaction);
+        if (_transactions.Any(t => t.Id == dbTransaction.Id)) return;
+        _transactions.Add(dbTransaction);
+        var account = _accounts.FirstOrDefault(a => a.Id == dbTransaction.AccountId);
+        account?.Transactions?.Add(dbTransaction);
         
         await Task.CompletedTask;
     }

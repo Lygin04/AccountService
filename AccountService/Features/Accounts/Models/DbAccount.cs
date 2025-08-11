@@ -3,7 +3,7 @@ using AccountService.Features.Transactions.Models;
 
 namespace AccountService.Features.Accounts.Models;
 
-public class Account
+public class DbAccount
 {
     /// <summary>
     /// Идентификатор счета.
@@ -48,5 +48,5 @@ public class Account
     /// <summary>
     /// Коллекция транзакций.
     /// </summary>
-    public List<Transaction>? Transactions { get; set; }
+    public List<DbTransaction>? Transactions { get; set; }
 }

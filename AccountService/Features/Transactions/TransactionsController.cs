@@ -12,14 +12,15 @@ public class TransactionsController(IMediator mediator) : ApiControllerV1WithAut
     /// Создает транзакцию из внешнего сервиса.
     /// </summary>
     /// <param name="transactionDto">Данные для создания транзакции.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Статус 201 Created при успешном создании, или ошибки.</returns>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Create(TransactionDto transactionDto)
+    public async Task<IActionResult> Create(TransactionDto transactionDto, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new CreateTransactionMessage(transactionDto));
+        var result = await mediator.Send(new CreateTransactionMessage(transactionDto), cancellationToken);
         
         return result.IsSuccess
             ? Created("", new { result.IsSuccess, result.Data, result.Error })
@@ -30,13 +31,14 @@ public class TransactionsController(IMediator mediator) : ApiControllerV1WithAut
     /// Получает список транзакций по идентификатору счета.
     /// </summary>
     /// <param name="accountId">Идентификатор счета.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Список транзакций и статус 200 OK, либо 404 если счёт не найден</returns>
     [HttpGet("{accountId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetByAccountId(Guid accountId)
+    public async Task<IActionResult> GetByAccountId(Guid accountId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new GetByAccountIdTransactionMessage(accountId));
+        var result = await mediator.Send(new GetByAccountIdTransactionMessage(accountId), cancellationToken);
         
         return ToActionResult(result);
     }

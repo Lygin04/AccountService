@@ -1,17 +1,19 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Features.Accounts.UpdateAccount;
 using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
-using AccountService.Infrastructure.Repositories.Interfaces;
+using AccountService.Infrastructure.Dapper.Interfaces;
 using FluentValidation;
 using MediatR;
 
 namespace AccountService.Features.Accounts.Transfer;
 
 public class TransferMessageHandler(
-    IFakeDataStorage fakeDataStorage,
+    IAccountRepository accountRepository,
     IMediator mediator,
+    IDapperContext<IDapperSettings> dapperContext,
     IValidator<TransferMessage> validator) : IMessageHandler<TransferMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(TransferMessage request, CancellationToken cancellationToken)
@@ -31,8 +33,8 @@ public class TransferMessageHandler(
             ));
         }
         
-        var account = await fakeDataStorage.GetAccountByIdAsync(request.TransferDto.AccountId);
-        var counterpartyAccount = await fakeDataStorage.GetAccountByIdAsync(request.TransferDto.CounterpartyAccountId);
+        var account = await accountRepository.GetByIdAsync(request.TransferDto.AccountId);
+        var counterpartyAccount = await accountRepository.GetByIdAsync(request.TransferDto.CounterpartyAccountId);
 
         if (account == null)
         {
@@ -76,29 +78,56 @@ public class TransferMessageHandler(
             account.Balance -= request.TransferDto.Amount;
             counterpartyAccount.Balance += request.TransferDto.Amount;
         }
-        
-        await fakeDataStorage.UpdateAccountAsync(account);
-        await fakeDataStorage.UpdateAccountAsync(counterpartyAccount);
 
-        var transaction = new TransactionDto
+        var accountUpdate = new UpdateAccountResponseDto
         {
-            AccountId = account.Id,
-            CounterpartyAccountId = counterpartyAccount.Id,
-            Amount = request.TransferDto.Amount,
-            Currency = request.TransferDto.Currency,
-            Type = request.TransferDto.Type,
-            Description = $"Получил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}"
+            Balance = account.Balance,
+            InterestRate = account.InterestRate,
+        };
+
+        var counterpartyAccountUpdate = new UpdateAccountResponseDto
+        {
+            Balance = counterpartyAccount.Balance,
+            InterestRate = counterpartyAccount.InterestRate,
         };
         
-        await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
+        using var transactionDb = dapperContext.BeginTransaction();
 
-        transaction.AccountId = counterpartyAccount.Id;
-        transaction.CounterpartyAccountId = account.Id;
-        transaction.Type = transaction.Type == TransactionType.Debit ? TransactionType.Credit : TransactionType.Debit;
-        transaction.Description =
-            $"Отправил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}";
-        
-        await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
+        try
+        {
+            await accountRepository.UpdateAsync(account.Id, accountUpdate, transactionDb);
+            await accountRepository.UpdateAsync(counterpartyAccount.Id, counterpartyAccountUpdate, transactionDb);
+
+            var transaction = new TransactionDto
+            {
+                AccountId = account.Id,
+                CounterpartyAccountId = counterpartyAccount.Id,
+                Amount = request.TransferDto.Amount,
+                Currency = request.TransferDto.Currency,
+                Type = request.TransferDto.Type,
+                Description =
+                    $"Получил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}"
+            };
+
+            await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
+
+            transaction.AccountId = counterpartyAccount.Id;
+            transaction.CounterpartyAccountId = account.Id;
+            transaction.Type = transaction.Type == TransactionType.Debit
+                ? TransactionType.Credit
+                : TransactionType.Debit;
+            transaction.Description =
+                $"Отправил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}";
+
+            await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
+            
+            transactionDb.Commit();
+        }
+        catch
+        {
+            transactionDb.Rollback();
+            throw;
+        }
             
         return MbResult<Unit>.Success(Unit.Value);
     }

@@ -4,4 +4,4 @@ using AccountService.Features.Accounts.Models;
 
 namespace AccountService.Features.Accounts.GetAccountsByOwnerId;
 
-public record GetAccountsByOwnerIdMessage(Guid OwnerId) : IMessage<MbResult<List<Account>>>;
+public record GetAccountsByOwnerIdMessage(Guid OwnerId) : IMessage<MbResult<List<DbAccount>>>;

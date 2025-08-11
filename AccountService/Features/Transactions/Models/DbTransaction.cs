@@ -2,7 +2,7 @@
 
 namespace AccountService.Features.Transactions.Models;
 
-public class Transaction
+public class DbTransaction
 {
     /// <summary>
     /// Идентификатор транзакции.
