@@ -1,7 +1,6 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
 using AccountService.Features.Accounts.Models;
-using AccountService.Infrastructure.Repositories.Interfaces;
 
 namespace AccountService.Features.Accounts.GetAccount;
 

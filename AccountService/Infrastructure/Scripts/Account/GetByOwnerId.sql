@@ -5,7 +5,8 @@ SELECT id               AS Id,
        balance          AS Balance,
        interest_rate    AS InterestRate,
        open_date        AS OpenDate,
-       close_date       AS CloseDate
+       close_date       AS CloseDate,
+       xmin             AS Xmin
 FROM accounts
 WHERE owner_id = @OwnerId
 ORDER BY open_date DESC;

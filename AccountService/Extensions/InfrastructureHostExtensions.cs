@@ -1,16 +1,13 @@
 ﻿using AccountService.Behaviors;
 using AccountService.Features.Accounts;
-using AccountService.Features.Accounts.Models;
 using AccountService.Features.Transactions;
-using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Dapper;
 using AccountService.Infrastructure.Dapper.Interfaces;
+using AccountService.Infrastructure.Factories;
+using AccountService.Infrastructure.Factories.Interfaces;
 using DbUp;
 using FluentValidation;
 using MediatR;
-using Npgsql;
-using PlanTime.Infrastructure.Factories;
-using PlanTime.Infrastructure.Factories.Interfaces;
 
 namespace AccountService.Extensions;
 
@@ -25,6 +22,7 @@ public static class InfrastructureHostExtensions
     /// <summary>
     /// Выполняет миграцию базы данных для указанного контекста.
     /// </summary>
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection MigrateDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration["BankDataBase:ConnectionString"];
@@ -48,6 +46,7 @@ public static class InfrastructureHostExtensions
     /// <summary>
     /// Подключение Даппера.
     /// </summary>
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddDapper(this IServiceCollection services)
     {
         return services
@@ -59,6 +58,7 @@ public static class InfrastructureHostExtensions
     /// Подключение и настройка библиотеки FluentValidation.
     /// </summary>
     /// <param name="services"></param>
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddFluentValidation(this IServiceCollection services)
     {
         services.AddValidatorsFromAssembly(typeof(Program).Assembly);

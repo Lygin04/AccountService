@@ -60,7 +60,20 @@ namespace AccountService.Infrastructure.Scripts.Transaction {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to INSERT INTO transactions (account_id,
+        ///                          counterparty_account_id,
+        ///                          amount,
+        ///                          currency_code,
+        ///                          type,
+        ///                          description,
+        ///                          timestamp)
+        ///VALUES (@AccountId,
+        ///        @CounterpartyAccountId,
+        ///        @Amount,
+        ///        @Currency,
+        ///        @Type,
+        ///        @Description,
+        ///        @Timestamp);.
         /// </summary>
         internal static string Create {
             get {
@@ -69,7 +82,16 @@ namespace AccountService.Infrastructure.Scripts.Transaction {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to SELECT id                       AS Id,
+        ///       account_id               AS AccountId,
+        ///       counterparty_account_id  AS CounterpartyAccountId,
+        ///       amount                   AS Amount,
+        ///       currency_code            AS Currency,
+        ///       type                     AS Type,
+        ///       description              AS Description,
+        ///       timestamp                AS Timestamp
+        ///FROM transactions
+        ///WHERE account_id = @AccountId;.
         /// </summary>
         internal static string GetByAccountId {
             get {

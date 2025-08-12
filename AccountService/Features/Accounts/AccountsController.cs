@@ -108,6 +108,7 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Transfer(TransferResponseDto transferDto, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new TransferMessage(transferDto), cancellationToken);

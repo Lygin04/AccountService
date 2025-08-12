@@ -14,7 +14,9 @@ public class DapperContext<TSettings> : IDapperContext<TSettings> where TSetting
     {
         if (settings == null)
         {
+#pragma warning disable CA2208
             throw new ArgumentException();
+#pragma warning restore CA2208
         }
 
         _connectionString = settings.ConnectionString;

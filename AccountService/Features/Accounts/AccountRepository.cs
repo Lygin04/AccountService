@@ -13,11 +13,15 @@ public class AccountRepository(IDapperContext<IDapperSettings> dapperContext) : 
         await dapperContext.Command(new QueryObject(Account.Create, dbAccount), transaction);
     }
 
-    public async Task UpdateAsync(Guid accountId, UpdateAccountResponseDto accountDto, ITransaction? transaction = null)
+    public async Task<bool> UpdateAsync(Guid accountId, UpdateAccountResponseDto accountDto, ITransaction? transaction = null)
     {
-        await dapperContext.Command(
-            new QueryObject(Account.Update, new { Id = accountId, accountDto.Balance, accountDto.InterestRate }),
+        var parameters = new { Id = accountId, accountDto.Balance, accountDto.InterestRate, accountDto.Xmin };
+        
+        var affectedRows = await dapperContext.CommandWithResponse<int>(
+            new QueryObject(Account.Update, parameters),
             transaction);
+
+        return affectedRows == 1;
     }
 
     public async Task DeleteAsync(Guid accountId, ITransaction? transaction = null)
@@ -33,6 +37,11 @@ public class AccountRepository(IDapperContext<IDapperSettings> dapperContext) : 
     public async Task<List<DbAccount>> GetByOwnerIdAsync(Guid ownerId)
     {
         return await dapperContext.ListOrEmpty<DbAccount>(new QueryObject(Account.GetByOwnerId, new { OwnerId = ownerId }));
+    }
+
+    public async Task<List<Guid>> GetAllAccountIdsAsync()
+    {
+        return await dapperContext.ListOrEmpty<Guid>(new QueryObject(Account.GetAll));
     }
 
     public async Task<bool> ExistsAsync(Guid accountId)

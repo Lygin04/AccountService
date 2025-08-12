@@ -7,6 +7,7 @@ public class DbTransaction
     /// <summary>
     /// Идентификатор транзакции.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public Guid Id { get; init; }
     
     /// <summary>

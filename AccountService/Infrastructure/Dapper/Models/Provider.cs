@@ -2,6 +2,8 @@
 
 public enum Provider
 {
-    None = 0,
+    //None = 0,
+    
+    // ReSharper disable once InconsistentNaming
     PostgreSQL = 1
 }

@@ -1,9 +1,8 @@
 ﻿using System.Data.Common;
-using Microsoft.Extensions.Configuration;
+using AccountService.Infrastructure.Factories.Interfaces;
 using Npgsql;
-using PlanTime.Infrastructure.Factories.Interfaces;
 
-namespace PlanTime.Infrastructure.Factories;
+namespace AccountService.Infrastructure.Factories;
 
 public class DefaultConnectionFactory(IConfiguration configuration) : IDbConnectionFactory
 {

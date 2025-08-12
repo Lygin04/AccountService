@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace PlanTime.Infrastructure.Factories.Interfaces;
+namespace AccountService.Infrastructure.Factories.Interfaces;
 
 /// <summary>
 /// Представляет интерфейс фабрики подключений к базе данных.
@@ -10,5 +10,6 @@ public interface IDbConnectionFactory
     /// <summary>
     /// Создает асинхронное подключение к базе данных.
     /// </summary>
+    // ReSharper disable once UnusedMember.Global
     Task<DbConnection> CreateAsync();
 }

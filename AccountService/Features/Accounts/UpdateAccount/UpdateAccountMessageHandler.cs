@@ -1,6 +1,5 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
-using AccountService.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -41,7 +40,7 @@ public class UpdateAccountMessageHandler(
         var updateAccountResponseDto = new UpdateAccountResponseDto
         {
             Balance = request.AccountDto.Balance,
-            InterestRate = request.AccountDto.InterestRate,
+            InterestRate = request.AccountDto.InterestRate
         };
         
         account.Balance = request.AccountDto.Balance;

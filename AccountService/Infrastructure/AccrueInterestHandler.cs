@@ -4,11 +4,12 @@ using AccountService.Infrastructure.Dapper.Models;
 
 namespace AccountService.Infrastructure;
 
-public class AccrueInterestHandler(IDapperContext<IDapperSettings> context, IAccountRepository accountRepository)
+// ReSharper disable once ClassNeverInstantiated.Global
+public class AccrueInterestHandler(IDapperContext<IDapperSettings> dapperContext, IAccountRepository accountRepository)
 {
     public async Task HandleAsync()
     {
-        using var transaction = context.BeginTransaction();
+        using var transaction = dapperContext.BeginTransaction();
         try
         {
             var accountIds = await accountRepository.GetAllAccountIdsAsync();

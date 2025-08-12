@@ -1,5 +1,6 @@
 ﻿namespace AccountService.Infrastructure.Dapper.Interfaces;
 
+// ReSharper disable once UnusedTypeParameter
 public interface IDapperContext<TSettings> where TSettings : IDapperSettings
 {
     Task<T?> FirstOrDefault<T>(IQueryObject queryObject);

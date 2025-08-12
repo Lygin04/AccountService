@@ -1,0 +1,25 @@
+﻿services:
+  test-database:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bank_test
+    networks:
+      - backend
+    ports:
+      - "50001:5432"
+    volumes:
+      - postgres_test_database:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+volumes:
+  postgres_test_database:
+
+networks:
+  backend:
+    driver: bridge

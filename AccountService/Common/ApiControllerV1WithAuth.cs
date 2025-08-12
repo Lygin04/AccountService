@@ -1,10 +1,8 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Common;
 
-[Authorize]
 [ApiController]
 [Route("v1/[controller]")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]

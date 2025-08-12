@@ -1,6 +1,5 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
-using AccountService.Infrastructure.Repositories.Interfaces;
 using MediatR;
 
 namespace AccountService.Features.Accounts.DeleteAccount;

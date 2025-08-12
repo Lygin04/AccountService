@@ -2,7 +2,6 @@
 using AccountService.Common.Abstractions;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
-using AccountService.Infrastructure.Repositories.Interfaces;
 
 namespace AccountService.Features.Accounts.GetAccountsByOwnerId;
 

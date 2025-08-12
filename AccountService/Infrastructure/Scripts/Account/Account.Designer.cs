@@ -60,7 +60,15 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to INSERT INTO accounts (owner_id, type, currency_code, balance, interest_rate, open_date, close_date)
+        ///VALUES (
+        ///        @OwnerId,
+        ///        @Type,
+        ///        @Currency,
+        ///        @Balance,
+        ///        @InterestRate,
+        ///        @OpenDate,
+        ///        @CloseDate);.
         /// </summary>
         internal static string Create {
             get {
@@ -69,7 +77,7 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to DELETE FROM accounts WHERE id = @Id;.
         /// </summary>
         internal static string Delete {
             get {
@@ -78,7 +86,7 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to SELECT EXISTS (SELECT 1 FROM accounts WHERE id = @Id);.
         /// </summary>
         internal static string ExistsById {
             get {
@@ -87,7 +95,27 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to SELECT id   AS Id
+        ///FROM accounts;.
+        /// </summary>
+        internal static string GetAll {
+            get {
+                return ResourceManager.GetString("GetAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SELECT id               AS Id,
+        ///       owner_id         AS OwnerId,
+        ///       type             AS Type,
+        ///       currency_code    AS Currency,
+        ///       balance          AS Balance,
+        ///       interest_rate    AS InterestRate,
+        ///       open_date        AS OpenDate,
+        ///       close_date       AS CloseDate,
+        ///       xmin             AS Xmin
+        ///FROM accounts
+        ///WHERE id = @Id;.
         /// </summary>
         internal static string GetById {
             get {
@@ -96,7 +124,18 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to SELECT id               AS Id,
+        ///       owner_id         AS OwnerId,
+        ///       type             AS Type,
+        ///       currency_code    AS Currency,
+        ///       balance          AS Balance,
+        ///       interest_rate    AS InterestRate,
+        ///       open_date        AS OpenDate,
+        ///       close_date       AS CloseDate,
+        ///       xmin             AS Xmin
+        ///FROM accounts
+        ///WHERE owner_id = @OwnerId
+        ///ORDER BY open_date DESC;.
         /// </summary>
         internal static string GetByOwnerId {
             get {
@@ -105,7 +144,10 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to UPDATE accounts
+        ///SET balance         = @Balance,
+        ///    interest_rate   = @InterestRate
+        ///WHERE id = @Id AND xmin = @Xmin;.
         /// </summary>
         internal static string Update {
             get {

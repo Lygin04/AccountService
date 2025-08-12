@@ -22,7 +22,9 @@ public class Transaction : ITransaction
         _transaction = _connection.BeginTransaction();
     }
 
+#pragma warning disable CA1816
     public void Dispose()
+#pragma warning restore CA1816
     {
         _transaction.Dispose();
         _connection.Close();

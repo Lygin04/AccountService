@@ -8,30 +8,25 @@ public class CreateAccountResponseDto
     /// <summary>
     /// Идентификатор владельца счета.
     /// </summary>
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global сеттер нужен для задавания значния через клиента
-    public Guid OwnerId { get; set; }
+    public Guid OwnerId { get; init; }
     
     /// <summary>
     /// Тип (Checking | Deposit | Credit).
     /// </summary>
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global сеттер нужен для задавания значния через клиента
-    public AccountType Type { get; set; }
+    public AccountType Type { get; init; }
     
     /// <summary>
     /// Валюта (ISO 4217).
     /// </summary>
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global сеттер нужен для задавания значния через клиента
-    public IsoCurrency Currency { get; set; }
+    public IsoCurrency Currency { get; init; }
     
     /// <summary>
     /// Баланс.
     /// </summary>
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global сеттер нужен для задавания значния через клиента
-    public decimal Balance { get; set; }
+    public decimal Balance { get; init; }
 
     /// <summary>
     /// Процентная ставка (decimal, опционально — только для Deposit и Credit).
     /// </summary>
-    // ReSharper disable once UnusedAutoPropertyAccessor.Global сеттер нужен для задавания значния через клиента
-    public decimal? InterestRate { get; set; }
+    public decimal? InterestRate { get; init; }
 }

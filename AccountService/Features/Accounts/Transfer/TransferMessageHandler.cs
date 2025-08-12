@@ -82,22 +82,43 @@ public class TransferMessageHandler(
         var accountUpdate = new UpdateAccountResponseDto
         {
             Balance = account.Balance,
-            InterestRate = account.InterestRate,
+            InterestRate = account.InterestRate
         };
 
         var counterpartyAccountUpdate = new UpdateAccountResponseDto
         {
             Balance = counterpartyAccount.Balance,
-            InterestRate = counterpartyAccount.InterestRate,
+            InterestRate = counterpartyAccount.InterestRate
         };
         
         using var transactionDb = dapperContext.BeginTransaction();
 
         try
         {
-            await accountRepository.UpdateAsync(account.Id, accountUpdate, transactionDb);
-            await accountRepository.UpdateAsync(counterpartyAccount.Id, counterpartyAccountUpdate, transactionDb);
+            var updated = await accountRepository.UpdateAsync(account.Id, accountUpdate, transactionDb);
 
+            if (!updated)
+            {
+                transactionDb.Rollback();
+                return MbResult<Unit>.Failure(new MbError(
+                    title: "Conflict",
+                    status: StatusCodes.Status409Conflict,
+                    detail: $"Conflict detected while updating account {account.Id}. The record was modified by another process."
+                ));  
+            }
+            
+            updated = await accountRepository.UpdateAsync(counterpartyAccount.Id, counterpartyAccountUpdate, transactionDb);
+            
+            if (!updated)
+            {
+                transactionDb.Rollback();
+                return MbResult<Unit>.Failure(new MbError(
+                    title: "Conflict",
+                    status: StatusCodes.Status409Conflict,
+                    detail: $"Conflict detected while updating account {account.Id}. The record was modified by another process."
+                ));   
+            }
+            
             var transaction = new TransactionDto
             {
                 AccountId = account.Id,
