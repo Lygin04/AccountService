@@ -1,10 +1,10 @@
+using AccountService.Common;
 using AccountService.Extensions;
 using AccountService.Infrastructure;
 using AccountService.Infrastructure.Clients;
 using AccountService.Infrastructure.Clients.Interfaces;
 using AccountService.Middleware;
 using Hangfire;
-using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -115,8 +115,3 @@ app.Run();
 #pragma warning disable CA1050
 public abstract class ProgramPlaceholder;
 #pragma warning restore CA1050
-
-public class AllowAllDashboardAuthorizationFilter : IDashboardAuthorizationFilter
-{
-    public bool Authorize(DashboardContext context) => true;
-}
