@@ -37,7 +37,7 @@
       - backend
       
   database:
-    image: postgis/postgis
+    image: postgres
     restart: always
     environment:
       POSTGRES_USER: 'postgres'

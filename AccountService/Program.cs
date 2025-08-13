@@ -4,7 +4,9 @@ using AccountService.Infrastructure.Clients;
 using AccountService.Infrastructure.Clients.Interfaces;
 using AccountService.Middleware;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +38,9 @@ if (!builder.Environment.IsEnvironment("Test"))
 {
     builder.Services.AddControllers(options =>
     {
-        options.Filters.Add(new AuthorizeFilter());
+        options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build()));
     });
 }
 else
@@ -99,11 +103,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.MapControllers();
 
+app.MapHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new AllowAllDashboardAuthorizationFilter()]
+}).AllowAnonymous();
+
+app.MapControllers();
 app.Run();
 
 #pragma warning disable CA1050
 public abstract class ProgramPlaceholder;
 #pragma warning restore CA1050
 
+public class AllowAllDashboardAuthorizationFilter : IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context) => true;
+}
