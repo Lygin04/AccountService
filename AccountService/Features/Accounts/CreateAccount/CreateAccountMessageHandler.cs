@@ -3,6 +3,8 @@ using AccountService.Common.Abstractions;
 using AccountService.Contracts;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.Outbox;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
@@ -14,7 +16,7 @@ public class CreateAccountMessageHandler(
     IClientVerificationService clientVerification,
     ICurrencyService currencyService,
     IValidator<CreateAccountMessage> validator,
-    IEventPublisher _eventPublisher) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
+    IOutboxWriter outboxWriter) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateAccountMessage request, CancellationToken cancellationToken)
     {
@@ -63,20 +65,23 @@ public class CreateAccountMessageHandler(
         };
 
         await accountRepository.AddAsync(account);
-        
-        await _eventPublisher.PublishAsync(
-            new AccountOpened(
-                Guid.NewGuid(),
-                DateTime.UtcNow,
-                account.Id,
-                account.OwnerId,
-                account.Currency,
-                account.Type
-            ),
-            routingKey: "account.opened",
+
+        var payload = new AccountOpened(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            account.Id,
+            account.OwnerId,
+            account.Currency,
+            account.Type);
+
+        var envelop = EnvelopeFactory.Create(
+            payload,
+            payload.EventId,
+            payload.OccurredAt,
             correlationId: Guid.NewGuid(),
-            causationId: Guid.NewGuid()
-        );
+            causationId: Guid.NewGuid());
+
+        await outboxWriter.WriteAsync("account.opened", envelop);
         
         return MbResult<Unit>.Success(Unit.Value);
     }

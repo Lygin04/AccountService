@@ -6,6 +6,8 @@ using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Dapper.Interfaces;
+using AccountService.Infrastructure.Outbox;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
@@ -17,7 +19,7 @@ public class TransferMessageHandler(
     IMediator mediator,
     IDapperContext<IDapperSettings> dapperContext,
     IValidator<TransferMessage> validator,
-    IEventPublisher eventPublisher) : IMessageHandler<TransferMessage, MbResult<Unit>>
+    IOutboxWriter outboxWriter) : IMessageHandler<TransferMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(TransferMessage request, CancellationToken cancellationToken)
     {
@@ -144,20 +146,26 @@ public class TransferMessageHandler(
                 $"Отправил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}";
 
             await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
-            
-            transactionDb.Commit();
 
-            await eventPublisher.PublishAsync(new TransferCompleted(
-                    Guid.NewGuid(),
-                    DateTime.UtcNow,
-                    account.Id,
-                    counterpartyAccount.Id,
-                    request.TransferDto.Amount,
-                    request.TransferDto.Currency,
-                    Guid.NewGuid()),        // TODO: Подумать что с этим делать
-                routingKey: "account.audit",
+            var payload = new TransferCompleted(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                counterpartyAccount.Id,
+                request.TransferDto.Amount,
+                request.TransferDto.Currency,
+                Guid.NewGuid());        // TODO: Подумать что с этим делать
+
+            var envelop = EnvelopeFactory.Create(
+                payload,
+                payload.EventId,
+                payload.OccurredAt,
                 correlationId: Guid.NewGuid(),
                 causationId: Guid.NewGuid());
+
+            await outboxWriter.WriteAsync("account.audit", envelop, transactionDb);
+            
+            transactionDb.Commit();
         }
         catch
         {

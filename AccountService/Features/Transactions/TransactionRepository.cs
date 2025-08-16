@@ -12,8 +12,8 @@ public class TransactionRepository(IDapperContext<IDapperSettings> dapperContext
         await dapperContext.Command(new QueryObject(Transaction.Create, dbTransaction), transaction);
     }
 
-    public Task<List<DbTransaction>> GetByAccountIdAsync(Guid accountId)
+    public async Task<List<DbTransaction>> GetByAccountIdAsync(Guid accountId)
     {
-        throw new NotImplementedException();
+        return await dapperContext.ListOrEmpty<DbTransaction>(new  QueryObject(Transaction.GetByAccountId, accountId));
     }
 }

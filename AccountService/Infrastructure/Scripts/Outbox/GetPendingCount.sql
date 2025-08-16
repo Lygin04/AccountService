@@ -1,0 +1,1 @@
+SELECT count(*) FROM outbox_messages WHERE status = 0

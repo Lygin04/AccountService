@@ -5,6 +5,8 @@ using AccountService.Infrastructure.Dapper;
 using AccountService.Infrastructure.Dapper.Interfaces;
 using AccountService.Infrastructure.Factories;
 using AccountService.Infrastructure.Factories.Interfaces;
+using AccountService.Infrastructure.Outbox;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using DbUp;
 using FluentValidation;
 using MediatR;
@@ -79,5 +81,8 @@ public static class InfrastructureHostExtensions
         
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddSingleton<IOutboxRepository, OutboxRepository>();
+        services.AddSingleton<IOutboxWriter, OutboxWriter>();
+        services.AddSingleton<OutboxDispatcher>();
     }
 }

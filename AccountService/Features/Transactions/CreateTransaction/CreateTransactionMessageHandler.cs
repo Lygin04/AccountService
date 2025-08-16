@@ -3,7 +3,8 @@ using AccountService.Common.Abstractions;
 using AccountService.Contracts;
 using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
-using AccountService.Infrastructure.RabbitMq.Interfaces;
+using AccountService.Infrastructure.Outbox;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -13,7 +14,7 @@ public class CreateTransactionMessageHandler(
     ITransactionRepository transactionRepository,
     IAccountRepository accountRepository,
     IValidator<CreateTransactionMessage> validator,
-    IEventPublisher eventPublisher) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
+    IOutboxWriter outboxWriter) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
@@ -75,34 +76,38 @@ public class CreateTransactionMessageHandler(
 
         await transactionRepository.AddAsync(transaction);
 
-        if (transaction.Type == TransactionType.Credit)
+        object? payload = transaction.Type switch
         {
-            await eventPublisher.PublishAsync(
-                new MoneyCredited(
-                    Guid.NewGuid(),
-                    DateTime.UtcNow,
-                    transaction.AccountId,
-                    transaction.Amount,
-                    transaction.Currency,
-                    transaction.Id),
-                routingKey: "account.notifications",
-                causationId: Guid.NewGuid(),
-                correlationId: Guid.NewGuid());
-        }
-        else
+            TransactionType.Credit => new MoneyCredited(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                transaction.Amount,
+                transaction.Currency,
+                transaction.Id),
+
+            TransactionType.Debit => new MoneyDebited(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                transaction.Amount,
+                transaction.Currency,
+                transaction.Id,
+                ""), // TODO: Подумать что с этим можно сделать
+
+            _ => null
+        };
+
+        if (payload != null)
         {
-            await eventPublisher.PublishAsync(
-                new MoneyDebited(
-                    Guid.NewGuid(),
-                    DateTime.UtcNow,
-                    transaction.AccountId,
-                    transaction.Amount,
-                    transaction.Currency,
-                    transaction.Id,
-                    ""),            // TODO: Подумать что с этим можно сделать
-                routingKey: "account.notifications",
-                causationId: Guid.NewGuid(),
-                correlationId: Guid.NewGuid());
+            var envelop = EnvelopeFactory.Create(
+                payload,
+                (payload as dynamic).EventId,
+                (payload as dynamic).OccurredAt,
+                correlationId: Guid.NewGuid(),
+                causationId: Guid.NewGuid());
+
+            await outboxWriter.WriteAsync("account.notifications", envelop);
         }
 
         return MbResult<Unit>.Success(Unit.Value);

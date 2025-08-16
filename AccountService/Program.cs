@@ -3,6 +3,7 @@ using AccountService.Extensions;
 using AccountService.Infrastructure;
 using AccountService.Infrastructure.Clients;
 using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.RabbitMq;
 using AccountService.Infrastructure.RabbitMq.Interfaces;
 using AccountService.Middleware;
@@ -37,7 +38,6 @@ builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddFluentValidation();
 
 builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(configuration));
-builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
 
 if (!builder.Environment.IsEnvironment("Test"))
 {
@@ -54,11 +54,9 @@ else
 }
 
 builder.Services.AddHangfire(config =>
-{
-#pragma warning disable CS0618 // Type or member is obsolete
-    config.UsePostgreSqlStorage(configuration["BankDataBase:ConnectionString"]);
-#pragma warning restore CS0618 // Type or member is obsolete
-});
+    config.UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(configuration["BankDataBase:ConnectionString"]));
 
 builder.Services.AddHangfireServer();
 
@@ -66,9 +64,9 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    var recurringJobs = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
-    recurringJobManager.AddOrUpdate<AccrueInterestHandler>(
+    recurringJobs.AddOrUpdate<AccrueInterestHandler>(
         "accrue-interest-daily",
         handler => handler.HandleAsync(),
         Cron.Daily(0, 0),
@@ -76,6 +74,11 @@ using (var scope = app.Services.CreateScope())
         {
             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time")
         });
+
+    recurringJobs.AddOrUpdate<OutboxDispatcher>(
+        "outbox-dispatcher",
+        d => d.DispatchBatch(),
+        "*/10 * * * * *");
 }
 
 app.UseCors(cors =>
