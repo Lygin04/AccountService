@@ -3,6 +3,8 @@ using AccountService.Extensions;
 using AccountService.Infrastructure;
 using AccountService.Infrastructure.Clients;
 using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.RabbitMq;
+using AccountService.Infrastructure.RabbitMq.Interfaces;
 using AccountService.Middleware;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -33,6 +35,9 @@ builder.Services.AddSingleton<IClientVerificationService, ClientVerificationStub
 builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddFluentValidation();
+
+builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(configuration));
+builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
 
 if (!builder.Environment.IsEnvironment("Test"))
 {

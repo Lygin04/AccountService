@@ -1,7 +1,9 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
+using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -10,7 +12,8 @@ namespace AccountService.Features.Transactions.CreateTransaction;
 public class CreateTransactionMessageHandler(
     ITransactionRepository transactionRepository,
     IAccountRepository accountRepository,
-    IValidator<CreateTransactionMessage> validator) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
+    IValidator<CreateTransactionMessage> validator,
+    IEventPublisher eventPublisher) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
@@ -71,7 +74,37 @@ public class CreateTransactionMessageHandler(
         account.Transactions ??= [];
 
         await transactionRepository.AddAsync(transaction);
-        
+
+        if (transaction.Type == TransactionType.Credit)
+        {
+            await eventPublisher.PublishAsync(
+                new MoneyCredited(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    transaction.AccountId,
+                    transaction.Amount,
+                    transaction.Currency,
+                    transaction.Id),
+                routingKey: "account.notifications",
+                causationId: Guid.NewGuid(),
+                correlationId: Guid.NewGuid());
+        }
+        else
+        {
+            await eventPublisher.PublishAsync(
+                new MoneyDebited(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    transaction.AccountId,
+                    transaction.Amount,
+                    transaction.Currency,
+                    transaction.Id,
+                    ""),            // TODO: Подумать что с этим можно сделать
+                routingKey: "account.notifications",
+                causationId: Guid.NewGuid(),
+                correlationId: Guid.NewGuid());
+        }
+
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

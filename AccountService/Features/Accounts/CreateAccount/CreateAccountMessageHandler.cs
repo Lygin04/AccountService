@@ -1,7 +1,9 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -11,7 +13,8 @@ public class CreateAccountMessageHandler(
     IAccountRepository accountRepository,
     IClientVerificationService clientVerification,
     ICurrencyService currencyService,
-    IValidator<CreateAccountMessage> validator) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
+    IValidator<CreateAccountMessage> validator,
+    IEventPublisher _eventPublisher) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateAccountMessage request, CancellationToken cancellationToken)
     {
@@ -60,6 +63,21 @@ public class CreateAccountMessageHandler(
         };
 
         await accountRepository.AddAsync(account);
+        
+        await _eventPublisher.PublishAsync(
+            new AccountOpened(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                account.OwnerId,
+                account.Currency,
+                account.Type
+            ),
+            routingKey: "account.opened",
+            correlationId: Guid.NewGuid(),
+            causationId: Guid.NewGuid()
+        );
+        
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

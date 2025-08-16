@@ -1,5 +1,5 @@
-INSERT INTO accounts (owner_id, type, currency_code, balance, interest_rate, open_date, close_date)
-VALUES (
+INSERT INTO accounts (id, owner_id, type, currency_code, balance, interest_rate, open_date, close_date)
+VALUES (@Id,
         @OwnerId,
         @Type,
         @Currency,

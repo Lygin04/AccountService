@@ -1,10 +1,12 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Accounts.UpdateAccount;
 using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Dapper.Interfaces;
+using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -14,7 +16,8 @@ public class TransferMessageHandler(
     IAccountRepository accountRepository,
     IMediator mediator,
     IDapperContext<IDapperSettings> dapperContext,
-    IValidator<TransferMessage> validator) : IMessageHandler<TransferMessage, MbResult<Unit>>
+    IValidator<TransferMessage> validator,
+    IEventPublisher eventPublisher) : IMessageHandler<TransferMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(TransferMessage request, CancellationToken cancellationToken)
     {
@@ -143,6 +146,18 @@ public class TransferMessageHandler(
             await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
             
             transactionDb.Commit();
+
+            await eventPublisher.PublishAsync(new TransferCompleted(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    account.Id,
+                    counterpartyAccount.Id,
+                    request.TransferDto.Amount,
+                    request.TransferDto.Currency,
+                    Guid.NewGuid()),        // TODO: Подумать что с этим делать
+                routingKey: "account.audit",
+                correlationId: Guid.NewGuid(),
+                causationId: Guid.NewGuid());
         }
         catch
         {
