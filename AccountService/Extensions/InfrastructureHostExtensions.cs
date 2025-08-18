@@ -1,12 +1,17 @@
 ﻿using AccountService.Behaviors;
 using AccountService.Features.Accounts;
 using AccountService.Features.Transactions;
+using AccountService.Infrastructure.Clients;
+using AccountService.Infrastructure.Clients.Interfaces;
 using AccountService.Infrastructure.Dapper;
 using AccountService.Infrastructure.Dapper.Interfaces;
 using AccountService.Infrastructure.Factories;
 using AccountService.Infrastructure.Factories.Interfaces;
 using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
+using AccountService.Infrastructure.RabbitMq;
+using AccountService.Infrastructure.RabbitMq.Interfaces;
+using AccountService.Middleware;
 using DbUp;
 using FluentValidation;
 using MediatR;
@@ -24,8 +29,7 @@ public static class InfrastructureHostExtensions
     /// <summary>
     /// Выполняет миграцию базы данных для указанного контекста.
     /// </summary>
-    // ReSharper disable once UnusedMethodReturnValue.Global
-    public static IServiceCollection MigrateDatabase(this IServiceCollection services, IConfiguration configuration)
+    public static void MigrateDatabase(IConfiguration configuration)
     {
         var connectionString = configuration["BankDataBase:ConnectionString"];
 
@@ -41,8 +45,6 @@ public static class InfrastructureHostExtensions
 
         if (upgrader.IsUpgradeRequired())
             upgrader.PerformUpgrade();
-
-        return services;
     }
     
     /// <summary>
@@ -70,22 +72,26 @@ public static class InfrastructureHostExtensions
 
         return services;
     }
-    
+
     /// <summary>
     /// Добавляет инфраструктурные сервисы в коллекцию сервисов.
     /// </summary>
-    /// <param name="services">Коллекция сервисов.</param>
-    public static void AddInfrastructure(this IServiceCollection services)
+    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IDbConnectionFactory, DefaultConnectionFactory>();
         
         services.AddSingleton<IAccountRepository, AccountRepository>();
         services.AddSingleton<ITransactionRepository, TransactionRepository>();
         
+        services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(configuration));
+
         services.AddSingleton<IOutboxRepository, OutboxRepository>();
         services.AddSingleton<IOutboxWriter, OutboxWriter>();
         services.AddSingleton<OutboxDispatcher>();
         
         services.AddSingleton<IInboxRepository, InboxRepository>();
+        
+        services.AddSingleton<IClientVerificationService, ClientVerificationStub>();
+        services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
     }
 }

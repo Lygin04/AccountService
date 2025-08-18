@@ -1,4 +1,10 @@
 ﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.OpenApi.Models;
 
 namespace AccountService.Extensions;
@@ -60,5 +66,63 @@ public static class ConfigurationExtensions
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
         });
+    }
+    
+    public static IServiceCollection AddApiControllers(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    {
+        if (!environment.IsEnvironment("Test"))
+        {
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build()));
+            }).AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            });
+        }
+        else
+        {
+            services.AddControllers().AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            });
+        }
+
+        return services;
+    }
+    
+    public static IServiceCollection AddHealthChecksWithDependencies(this IServiceCollection services, IConfiguration configuration)
+    {
+        var rabbitMqSection = configuration.GetSection("RabbitMQ");
+        var rabbitMqConnectionString =
+            $"amqp://{rabbitMqSection["UserName"]}:{rabbitMqSection["Password"]}@{rabbitMqSection["HostName"]}:{rabbitMqSection["Port"]}/";
+
+        services.AddHealthChecks()
+            .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
+            .AddRabbitMQ(
+                rabbitMqConnectionString,
+                name: "rabbitmq",
+                tags: ["ready"])
+            .AddNpgSql(
+                connectionString: configuration["BankDataBase:ConnectionString"]!,
+                name: "postgres",
+                tags: ["ready"]);
+
+        return services;
+    }
+    
+    public static IServiceCollection AddHangfireWithPostgres(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHangfire(config =>
+            config.UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(configuration["BankDataBase:ConnectionString"])));
+
+        services.AddHangfireServer();
+        return services;
     }
 }
