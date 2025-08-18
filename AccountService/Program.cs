@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AccountService.Common;
 using AccountService.Extensions;
 using AccountService.Infrastructure;
@@ -9,7 +11,9 @@ using AccountService.Infrastructure.RabbitMq.Interfaces;
 using AccountService.Middleware;
 using Hangfire;
 using Hangfire.PostgreSql;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +43,22 @@ builder.Services.AddFluentValidation();
 
 builder.Services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(configuration));
 
+var rabbitMqSection = builder.Configuration.GetSection("RabbitMQ");
+var rabbitMqConnectionString =
+    $"amqp://{rabbitMqSection["UserName"]}:{rabbitMqSection["Password"]}@{rabbitMqSection["HostName"]}:{rabbitMqSection["Port"]}/";
+
+
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
+    .AddRabbitMQ(
+        rabbitMqConnectionString,
+        name: "rabbitmq",
+        tags: ["ready"])
+    .AddNpgSql(
+        connectionString: configuration["BankDataBase:ConnectionString"]!,
+        name: "postgres",
+        tags: ["ready"]);
+
 if (!builder.Environment.IsEnvironment("Test"))
 {
     builder.Services.AddControllers(options =>
@@ -46,17 +66,25 @@ if (!builder.Environment.IsEnvironment("Test"))
         options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build()));
+    }).AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
 }
 else
 {
-    builder.Services.AddControllers();
+    builder.Services.AddControllers().AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 }
 
 builder.Services.AddHangfire(config =>
     config.UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(configuration["BankDataBase:ConnectionString"]));
+        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(configuration["BankDataBase:ConnectionString"])));
 
 builder.Services.AddHangfireServer();
 
@@ -79,7 +107,24 @@ using (var scope = app.Services.CreateScope())
         "outbox-dispatcher",
         d => d.DispatchBatch(),
         "*/10 * * * * *");
+    
+    recurringJobs.AddOrUpdate<InboxConsumer>(
+        "inbox-consumer",
+        x => x.ConsumeAsync(),
+        "*/1 * * * * *");
 }
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = check => check.Name == "self",
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+}).AllowAnonymous();
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+}).AllowAnonymous();
 
 app.UseCors(cors =>
 {
@@ -116,6 +161,8 @@ app.MapHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = [new AllowAllDashboardAuthorizationFilter()]
 }).AllowAnonymous();
+
+app.UseMiddleware<HttpLoggingMiddleware>();
 
 app.MapControllers();
 app.Run();
