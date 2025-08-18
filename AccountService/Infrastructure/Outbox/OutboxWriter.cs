@@ -8,21 +8,22 @@ namespace AccountService.Infrastructure.Outbox;
 
 public class OutboxWriter(IOutboxRepository outboxRepository) : IOutboxWriter
 {
-    public async Task WriteAsync<TPayload>(string routingKey, Envelope<TPayload> envelope, ITransaction? transaction = null)
+    public async Task WriteAsync<TPayload>(string routingKey, TPayload payload, ITransaction? transaction = null)
+        where TPayload : Event
     {
         var headers = new Dictionary<string, string>
         {
-            ["X-Correlation-Id"] = envelope.Meta.CorrelationId.ToString(),
-            ["X-Causation-Id"]   = envelope.Meta.CausationId.ToString()
+            ["X-Correlation-Id"] = payload.Meta.CorrelationId.ToString(),
+            ["X-Causation-Id"]   = payload.Meta.CausationId.ToString()
         };
 
         var message = new OutboxMessage
         {
-            Id = envelope.EventId,
-            OccurredAt = envelope.OccurredAt,
+            Id = payload.EventId,
+            OccurredAt = payload.OccurredAt,
             Type = typeof(TPayload).Name,
             RoutingKey = routingKey,
-            PayloadJson = JsonSerializer.Serialize(envelope),
+            PayloadJson = JsonSerializer.Serialize(payload),
             HeadersJson = JsonSerializer.Serialize(headers),
             Status = OutboxStatus.Pending,
             Attempts = 0,

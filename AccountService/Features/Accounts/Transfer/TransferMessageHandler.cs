@@ -156,14 +156,7 @@ public class TransferMessageHandler(
                 request.TransferDto.Currency,
                 Guid.NewGuid());        // TODO: Подумать что с этим делать
 
-            var envelop = EnvelopeFactory.Create(
-                payload,
-                payload.EventId,
-                payload.OccurredAt,
-                correlationId: Guid.NewGuid(),
-                causationId: Guid.NewGuid());
-
-            await outboxWriter.WriteAsync("account.audit", envelop, transactionDb);
+            await outboxWriter.WriteAsync("account.audit", payload, transactionDb);
             
             transactionDb.Commit();
         }

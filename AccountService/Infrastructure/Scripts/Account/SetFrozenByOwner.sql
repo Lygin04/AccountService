@@ -1,0 +1,1 @@
+UPDATE accounts SET frozen = @Frozen WHERE owner_id = @OwnerId

@@ -13,4 +13,5 @@ public interface IAccountRepository
     Task<List<DbAccount>> GetByOwnerIdAsync(Guid ownerId);
     Task<List<Guid>> GetAllAccountIdsAsync();
     Task<bool> ExistsAsync(Guid accountId);
+    Task SetFrozenByOwnerAsync(Guid ownerId, bool frozen, ITransaction? transaction = null);
 }

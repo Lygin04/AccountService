@@ -79,10 +79,13 @@ public static class InfrastructureHostExtensions
     {
         services.AddSingleton<IDbConnectionFactory, DefaultConnectionFactory>();
         
-        services.AddScoped<IAccountRepository, AccountRepository>();
-        services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddSingleton<IAccountRepository, AccountRepository>();
+        services.AddSingleton<ITransactionRepository, TransactionRepository>();
+        
         services.AddSingleton<IOutboxRepository, OutboxRepository>();
         services.AddSingleton<IOutboxWriter, OutboxWriter>();
         services.AddSingleton<OutboxDispatcher>();
+        
+        services.AddSingleton<IInboxRepository, InboxRepository>();
     }
 }

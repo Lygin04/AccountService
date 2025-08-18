@@ -23,7 +23,7 @@ public class ParallelTransferTests(CustomWebApplicationFactory<ProgramPlaceholde
             OwnerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Balance = 10000,
             InterestRate = 0,
-            Currency = IsoCurrency.Rub,
+            Currency = IsoCurrency.RUB,
             Type = AccountType.Checking
         };
         
@@ -32,7 +32,7 @@ public class ParallelTransferTests(CustomWebApplicationFactory<ProgramPlaceholde
             OwnerId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Balance = 0,
             InterestRate = 0,
-            Currency = IsoCurrency.Rub,
+            Currency = IsoCurrency.RUB,
             Type = AccountType.Checking
         };
 
@@ -63,7 +63,7 @@ public class ParallelTransferTests(CustomWebApplicationFactory<ProgramPlaceholde
                     AccountId = fromAccountId,
                     CounterpartyAccountId = toAccountId,
                     Amount = transferAmount,
-                    Currency = IsoCurrency.Usd,
+                    Currency = IsoCurrency.USD,
                     Type = TransactionType.Debit
                 };
 

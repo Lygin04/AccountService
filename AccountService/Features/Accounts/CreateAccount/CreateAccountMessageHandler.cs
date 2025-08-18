@@ -3,9 +3,9 @@ using AccountService.Common.Abstractions;
 using AccountService.Contracts;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.Dapper.Interfaces;
 using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
-using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -16,7 +16,8 @@ public class CreateAccountMessageHandler(
     IClientVerificationService clientVerification,
     ICurrencyService currencyService,
     IValidator<CreateAccountMessage> validator,
-    IOutboxWriter outboxWriter) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
+    IOutboxWriter outboxWriter,
+    IDapperContext<IDapperSettings> dapperContext) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateAccountMessage request, CancellationToken cancellationToken)
     {
@@ -63,26 +64,30 @@ public class CreateAccountMessageHandler(
             InterestRate = request.CreateAccountResponseDto.InterestRate,
             OpenDate = DateTime.UtcNow
         };
-
-        await accountRepository.AddAsync(account);
-
-        var payload = new AccountOpened(
-            Guid.NewGuid(),
-            DateTime.UtcNow,
-            account.Id,
-            account.OwnerId,
-            account.Currency,
-            account.Type);
-
-        var envelop = EnvelopeFactory.Create(
-            payload,
-            payload.EventId,
-            payload.OccurredAt,
-            correlationId: Guid.NewGuid(),
-            causationId: Guid.NewGuid());
-
-        await outboxWriter.WriteAsync("account.opened", envelop);
         
+        using var transaction = dapperContext.BeginTransaction();
+        try
+        {
+            await accountRepository.AddAsync(account, transaction);
+
+            var payload = new AccountOpened(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                account.OwnerId,
+                account.Currency,
+                account.Type);
+
+            await outboxWriter.WriteAsync("account.opened", payload, transaction);
+            
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

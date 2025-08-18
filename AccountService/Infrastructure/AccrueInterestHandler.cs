@@ -39,14 +39,7 @@ public class AccrueInterestHandler(
                     DateTime.UtcNow.Date.AddDays(-1),
                     dailyInterest);
 
-                var envelop = EnvelopeFactory.Create(
-                    payload,
-                    payload.EventId,
-                    payload.OccurredAt,
-                    correlationId: Guid.NewGuid(),
-                    causationId: Guid.NewGuid());       // TODO: Пересмотреть данное решение
-
-                await outboxWriter.WriteAsync("account.notifications", envelop, transaction);
+                await outboxWriter.WriteAsync("account.notifications", payload, transaction);
             }
 
             transaction.Commit();

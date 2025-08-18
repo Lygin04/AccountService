@@ -1,0 +1,1 @@
+SELECT exists(SELECT 1 FROM inbox_consumed WHERE message_id = @MessageId AND handler = @Handler)

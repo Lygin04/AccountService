@@ -16,7 +16,12 @@ public class OutboxDispatcher(
     public async Task DispatchBatch()
     {
         var due = await outboxRepository.TakeDueAsync(BatchSize);
-        if (due.Count == 0) return;
+        if (due.Count == 0) 
+            return;
+
+        var count = await outboxRepository.GetPendingCountAsync();
+        if (count > 100)
+            logger.LogWarning("Outbox backlog exceeded threshold (Count={Count}).", count);
 
         using var channel = rabbitMqConnection.Connection!.CreateModel();
         channel.ExchangeDeclare("account.events", ExchangeType.Topic, durable: true);

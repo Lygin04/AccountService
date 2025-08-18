@@ -7,6 +7,7 @@ public interface IOutboxWriter
 {
     Task WriteAsync<TPayload>(
         string routingKey,
-        Envelope<TPayload> envelope,
-        ITransaction? transaction = null);
+        TPayload envelope,
+        ITransaction? transaction = null)
+        where TPayload : Event;
 }

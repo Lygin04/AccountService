@@ -1,4 +1,5 @@
-﻿using AccountService.Common.Enums;
+﻿using System.Text.Json.Serialization;
+using AccountService.Common.Enums;
 using AccountService.Features.Transactions.Models;
 
 namespace AccountService.Features.Accounts.Models;
@@ -51,7 +52,10 @@ public class DbAccount
     public DateTime? CloseDate { get; set; }
     
     // ReSharper disable once UnusedMember.Global
+    [JsonIgnore]
     public int Xmin { get; set; }
+    
+    public bool Frozen { get; set; }
     
     /// <summary>
     /// Коллекция транзакций.

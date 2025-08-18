@@ -10,7 +10,4 @@ public record AccountOpened(
     Guid OwnerId,
     IsoCurrency Currency,
     AccountType Type
-)
-{
-    public Meta Meta { get; init; } = new("v1", "account-service", Guid.NewGuid(), Guid.NewGuid());
-}
+) : Event(EventId, OccurredAt);

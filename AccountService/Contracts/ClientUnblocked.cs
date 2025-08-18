@@ -3,8 +3,5 @@ namespace AccountService.Contracts;
 public record ClientUnblocked(
     Guid EventId,
     DateTime OccurredAt,
-    Guid ClientId
-)
-{
-    public Meta Meta { get; init; } = new("v1", "antifraud-service", Guid.NewGuid(), Guid.NewGuid());
-}
+    Guid AccountId
+) : Event(EventId, OccurredAt);

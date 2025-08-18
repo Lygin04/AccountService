@@ -3,6 +3,7 @@ using AccountService.Common.Abstractions;
 using AccountService.Contracts;
 using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
+using AccountService.Infrastructure.Dapper.Interfaces;
 using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
 using FluentValidation;
@@ -14,7 +15,8 @@ public class CreateTransactionMessageHandler(
     ITransactionRepository transactionRepository,
     IAccountRepository accountRepository,
     IValidator<CreateTransactionMessage> validator,
-    IOutboxWriter outboxWriter) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
+    IOutboxWriter outboxWriter,
+    IDapperContext<IDapperSettings> dapperContext) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
@@ -74,40 +76,44 @@ public class CreateTransactionMessageHandler(
 
         account.Transactions ??= [];
 
-        await transactionRepository.AddAsync(transaction);
-
-        object? payload = transaction.Type switch
+        using var transactionDb = dapperContext.BeginTransaction();
+        try
         {
-            TransactionType.Credit => new MoneyCredited(
-                Guid.NewGuid(),
-                DateTime.UtcNow,
-                account.Id,
-                transaction.Amount,
-                transaction.Currency,
-                transaction.Id),
+            await transactionRepository.AddAsync(transaction, transactionDb);
 
-            TransactionType.Debit => new MoneyDebited(
-                Guid.NewGuid(),
-                DateTime.UtcNow,
-                account.Id,
-                transaction.Amount,
-                transaction.Currency,
-                transaction.Id,
-                ""), // TODO: Подумать что с этим можно сделать
+            Event? payload = transaction.Type switch
+            {
+                TransactionType.Credit => new MoneyCredited(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    account.Id,
+                    transaction.Amount,
+                    transaction.Currency,
+                    transaction.Id),
 
-            _ => null
-        };
+                TransactionType.Debit => new MoneyDebited(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    account.Id,
+                    transaction.Amount,
+                    transaction.Currency,
+                    transaction.Id,
+                    ""), // TODO: Подумать что с этим можно сделать
 
-        if (payload != null)
+                _ => null
+            };
+
+            if (payload != null)
+            {
+                await outboxWriter.WriteAsync("account.notifications", payload, transactionDb);
+            }
+            
+            transactionDb.Commit();
+        }
+        catch
         {
-            var envelop = EnvelopeFactory.Create(
-                payload,
-                (payload as dynamic).EventId,
-                (payload as dynamic).OccurredAt,
-                correlationId: Guid.NewGuid(),
-                causationId: Guid.NewGuid());
-
-            await outboxWriter.WriteAsync("account.notifications", envelop);
+            transactionDb.Rollback();
+            throw;
         }
 
         return MbResult<Unit>.Success(Unit.Value);
