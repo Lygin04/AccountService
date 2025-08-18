@@ -78,14 +78,14 @@ public static class InfrastructureHostExtensions
     /// </summary>
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IDbConnectionFactory, DefaultConnectionFactory>();
+        services.AddTransient<IDbConnectionFactory, DefaultConnectionFactory>();
         
-        services.AddSingleton<IAccountRepository, AccountRepository>();
-        services.AddSingleton<ITransactionRepository, TransactionRepository>();
+        services.AddTransient<IAccountRepository, AccountRepository>();
+        services.AddTransient<ITransactionRepository, TransactionRepository>();
         
         services.AddSingleton<IRabbitMqConnection>(new RabbitMqConnection(configuration));
 
-        services.AddSingleton<IOutboxRepository, OutboxRepository>();
+        services.AddTransient<IOutboxRepository, OutboxRepository>();
         services.AddSingleton<IOutboxWriter, OutboxWriter>();
         services.AddSingleton<OutboxDispatcher>();
         

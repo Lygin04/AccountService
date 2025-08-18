@@ -3,10 +3,19 @@ using AccountService.Infrastructure;
 using AccountService.Infrastructure.Outbox;
 using AccountService.Middleware;
 using Hangfire;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "AccountService")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -71,6 +80,7 @@ if (!app.Environment.IsEnvironment("Test"))
 
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<HttpLoggingMiddleware>();
 
 app.MapControllers();

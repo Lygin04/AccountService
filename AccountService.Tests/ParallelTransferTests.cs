@@ -63,7 +63,7 @@ public class ParallelTransferTests(CustomWebApplicationFactory<ProgramPlaceholde
                     AccountId = fromAccountId,
                     CounterpartyAccountId = toAccountId,
                     Amount = transferAmount,
-                    Currency = IsoCurrency.USD,
+                    Currency = IsoCurrency.RUB,
                     Type = TransactionType.Debit
                 };
 
