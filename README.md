@@ -2,8 +2,8 @@
 
 ### Запуск приложения
 Приложение запускается командой `docker-compose -f compose.yaml up -d`. Вместе с основным сервисом поднимается Keycloak.
-Приложение запускается на порту `8080`. Для тестирования доступен swagger по следующей ссылке
-http://localhost:8080/swagger/index.html
+Приложение запускается на порту `8080`. Для тестирования доступен swagger по 
+[ссылке](http://localhost:8080/swagger/index.html)
 
 ### Документация API
 #### /v1/Accounts
@@ -18,6 +18,10 @@ http://localhost:8080/swagger/index.html
 - POST Создает транзакцию из внешнего сервиса
 - GET /{accountId:guid Получает список транзакций по идентификатору счета
 
+#### /health
+- [live](http://localhost:8080/health/live) Просто проверяет, что приложение работает (без зависимостей).
+- [ready](http://localhost:8080/health/ready) Проверяет соединения с Postgres и RabbitMQ.
+
 ### Инструкция использования Keycloak в Swagger
 При нажатии кнопки `Authorize` в появившемся окне нужно заполнить поле client_id: myclient и выбрать Scopes: select all
 после чего еще раз нажать кнопку `Authorize`. Далее нас перебрасывает на страницу аутентификации где нужно заполнить 
@@ -26,4 +30,16 @@ http://localhost:8080/swagger/index.html
 
 ### Инструкция запуска тестов
 Перед началом теста нужно запустить контейнер и с тестовой бд. Вот команда для запуска контейнера и тестов
-`docker-compose -f compose.override.yaml up -d; dotnet test; docker-compose -f compose.override.yaml down -v`. 
+`docker-compose -f compose.override.yaml up -d; dotnet test; docker-compose -f compose.override.yaml down -v`.
+
+### Инструкци по открытию дашбордов
+##### HangFire
+[ссылка на дашборд](http://localhost:8080/hangfire)
+
+##### RabbitMQ
+[ссылка на дашборд](http://localhost:15672) \
+Username: guest \
+Password: guest
+
+### Логгирование
+Логирование выполнено по ТЗ, с сохранением в файле который находится в корне проекта AccountService в папке logs.
