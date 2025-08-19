@@ -1,4 +1,4 @@
-﻿using AccountService.Common;
+﻿using AccountService.Common.Abstractions;
 using AccountService.Contracts;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.GetByAccountIdTransaction;

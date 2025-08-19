@@ -17,6 +17,7 @@ public static class ConfigurationExtensions
     /// </summary>
     /// <param name="services">Коллекция сервисов.</param>
     /// <param name="configuration">Конфигурационные настройки.</param>
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddSwaggerWithAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSwaggerGen(options =>
@@ -71,7 +72,8 @@ public static class ConfigurationExtensions
         return services;
     }
     
-    public static IServiceCollection AddApiControllers(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    // ReSharper disable once UnusedMethodReturnValue.Global
+    public static IServiceCollection AddApiControllers(this IServiceCollection services, IWebHostEnvironment environment)
     {
         if (!environment.IsEnvironment("Test"))
         {
@@ -98,6 +100,7 @@ public static class ConfigurationExtensions
         return services;
     }
     
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddHealthChecksWithDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         var rabbitMqSection = configuration.GetSection("RabbitMQ");
@@ -118,6 +121,7 @@ public static class ConfigurationExtensions
         return services;
     }
     
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IServiceCollection AddHangfireWithPostgres(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHangfire(config =>

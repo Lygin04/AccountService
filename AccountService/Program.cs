@@ -35,7 +35,7 @@ if (!builder.Environment.IsEnvironment("Test"))
 
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
-builder.Services.AddApiControllers(configuration, builder.Environment);
+builder.Services.AddApiControllers(builder.Environment);
 builder.Services.AddHealthChecksWithDependencies(configuration);
 builder.Services.AddHangfireWithPostgres(configuration);
 

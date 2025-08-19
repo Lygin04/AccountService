@@ -3,9 +3,7 @@ using AccountService.Features.Accounts;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Dapper.Interfaces;
 using AccountService.Infrastructure.Dapper.Models;
-using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
-using AccountService.Infrastructure.RabbitMq.Interfaces;
 
 namespace AccountService.Infrastructure;
 

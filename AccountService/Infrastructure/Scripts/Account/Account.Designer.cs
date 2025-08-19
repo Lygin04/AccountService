@@ -144,7 +144,7 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to UPDATE accounts SET frozen = @Frozen WHERE owner_id = @OwnerId.
         /// </summary>
         internal static string SetFrozenByOwner {
             get {

@@ -34,8 +34,8 @@ public class OutboxDispatcher(
                 props.ContentType = "application/json";
 
                 // Заголовки
-                var headers = JsonSerializer.Deserialize<Dictionary<string, object>>(m.HeadersJson) ?? new();
-                props.Headers = headers.ToDictionary(k => k.Key, v => (object)Encoding.UTF8.GetBytes(v.Value.ToString()!));
+                var headers = JsonSerializer.Deserialize<Dictionary<string, object>>(m.HeadersJson) ?? new Dictionary<string, object>();
+                props.Headers = headers.ToDictionary(k => k.Key, object (v) => Encoding.UTF8.GetBytes(v.Value.ToString()!));
 
                 var body = Encoding.UTF8.GetBytes(m.PayloadJson);
 

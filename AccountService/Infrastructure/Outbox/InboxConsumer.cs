@@ -7,6 +7,7 @@ using ExchangeType = RabbitMQ.Client.ExchangeType;
 
 namespace AccountService.Infrastructure.Outbox;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class InboxConsumer(
     IRabbitMqConnection connection,
     IInboxRepository inbox,

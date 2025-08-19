@@ -3,24 +3,27 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace AccountService.Contracts.Examples;
 
+// ReSharper disable once UnusedType.Global
 public class ClientBlockedExample : IExamplesProvider<ClientBlocked>
 {
-    public ClientBlocked GetExamples() => new ClientBlocked(
+    public ClientBlocked GetExamples() => new(
         EventId: Guid.NewGuid(),
         OccurredAt: DateTime.UtcNow,
         ClientId: Guid.NewGuid()
     );
 }
 
+// ReSharper disable once UnusedType.Global
 public class ClientUnblockedExample : IExamplesProvider<ClientUnblocked>
 {
-    public ClientUnblocked GetExamples() => new ClientUnblocked(
+    public ClientUnblocked GetExamples() => new(
         EventId: Guid.NewGuid(),
         OccurredAt: DateTime.UtcNow,
         ClientId: Guid.NewGuid()
     );
 }
 
+// ReSharper disable once UnusedType.Global
 public class InterestAccruedExample : IExamplesProvider<InterestAccrued>
 {
     public InterestAccrued GetExamples()
@@ -36,6 +39,7 @@ public class InterestAccruedExample : IExamplesProvider<InterestAccrued>
     }
 }
 
+// ReSharper disable once UnusedType.Global
 public class MoneyCreditedExample : IExamplesProvider<MoneyCredited>
 {
     public MoneyCredited GetExamples()
@@ -51,6 +55,7 @@ public class MoneyCreditedExample : IExamplesProvider<MoneyCredited>
     }
 }
 
+// ReSharper disable once UnusedType.Global
 public class MoneyDebitedExample : IExamplesProvider<MoneyDebited>
 {
     public MoneyDebited GetExamples()

@@ -22,9 +22,12 @@ public class RabbitMqConnection : IRabbitMqConnection, IDisposable
         _connection = factory.CreateConnection();
     }
 
+    // ReSharper disable once ConvertToAutoPropertyWhenPossible
     public IConnection? Connection => _connection;
 
+#pragma warning disable CA1816
     public void Dispose()
+#pragma warning restore CA1816
     {
         _connection?.Dispose();
     }

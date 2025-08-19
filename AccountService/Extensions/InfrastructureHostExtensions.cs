@@ -11,7 +11,6 @@ using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
 using AccountService.Infrastructure.RabbitMq;
 using AccountService.Infrastructure.RabbitMq.Interfaces;
-using AccountService.Middleware;
 using DbUp;
 using FluentValidation;
 using MediatR;

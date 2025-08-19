@@ -6,9 +6,7 @@ using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Dapper.Interfaces;
-using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
-using AccountService.Infrastructure.RabbitMq.Interfaces;
 using FluentValidation;
 using MediatR;
 

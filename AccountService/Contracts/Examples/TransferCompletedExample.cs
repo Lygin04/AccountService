@@ -3,6 +3,7 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace AccountService.Contracts.Examples;
 
+// ReSharper disable once UnusedType.Global
 public class TransferCompletedExample : IExamplesProvider<TransferCompleted>
 {
     public TransferCompleted GetExamples()

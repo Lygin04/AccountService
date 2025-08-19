@@ -4,7 +4,6 @@ using AccountService.Contracts;
 using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Dapper.Interfaces;
-using AccountService.Infrastructure.Outbox;
 using AccountService.Infrastructure.Outbox.Interfaces;
 using FluentValidation;
 using MediatR;

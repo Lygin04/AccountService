@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Json;
 using AccountService.Common.Enums;
-using AccountService.Contracts;
 using AccountService.Features.Accounts.CreateAccount;
 using AccountService.Features.Accounts.Models;
 using AccountService.Features.Accounts.Transfer;

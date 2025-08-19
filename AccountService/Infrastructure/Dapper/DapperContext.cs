@@ -12,6 +12,7 @@ public class DapperContext<TSettings> : IDapperContext<TSettings> where TSetting
 
     public DapperContext(IDapperSettings settings)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (settings == null)
         {
 #pragma warning disable CA2208

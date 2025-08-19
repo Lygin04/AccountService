@@ -1,4 +1,4 @@
-﻿using AccountService.Common;
+﻿using AccountService.Common.Abstractions;
 using AccountService.Contracts;
 using AccountService.Features.Accounts.BlockedAccount;
 using AccountService.Features.Accounts.CreateAccount;
@@ -126,7 +126,7 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// <param name="ownerId">Идентификатор владельца.</param>
     /// <param name="isBlocked">true - заблокировать. false - разблокировать.</param>
     /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
-    [HttpPatch("owner/{Owner:guid}/blocked/{isBlocked:bool}")]
+    [HttpPatch("owner/{ownerId:guid}/blocked/{isBlocked:bool}")]
     [ProducesResponseType(typeof(ClientBlocked), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ClientUnblocked), StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

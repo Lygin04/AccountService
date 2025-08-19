@@ -1,17 +1,9 @@
 ﻿namespace AccountService.Common;
 
-public class MbError
+public class MbError(string title, int status, string detail, IReadOnlyDictionary<string, string[]>? errors = null)
 {
-    public string Title { get; }
-    public int Status { get; }
-    public string Detail { get; }
-    public IReadOnlyDictionary<string, string[]>? Errors { get; }
-
-    public MbError(string title, int status, string detail, IReadOnlyDictionary<string, string[]>? errors = null)
-    {
-        Title = title;
-        Status = status;
-        Detail = detail;
-        Errors = errors;
-    }
+    public string Title { get; } = title;
+    public int Status { get; } = status;
+    public string Detail { get; } = detail;
+    public IReadOnlyDictionary<string, string[]>? Errors { get; } = errors;
 }

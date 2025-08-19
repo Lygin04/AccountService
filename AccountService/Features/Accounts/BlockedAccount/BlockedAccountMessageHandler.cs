@@ -1,6 +1,5 @@
 using AccountService.Common;
 using AccountService.Common.Abstractions;
-using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
 using MediatR;
 

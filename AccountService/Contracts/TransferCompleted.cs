@@ -15,9 +15,14 @@ namespace AccountService.Contracts;
 public record TransferCompleted(
     Guid EventId,
     DateTime OccurredAt,
+    // ReSharper disable once NotAccessedPositionalProperty.Global
     Guid SourceAccountId,
+    // ReSharper disable once NotAccessedPositionalProperty.Global
     Guid DestinationAccountId,
+    // ReSharper disable once NotAccessedPositionalProperty.Global
     decimal Amount,
+    // ReSharper disable once NotAccessedPositionalProperty.Global
     IsoCurrency Currency,
+    // ReSharper disable once NotAccessedPositionalProperty.Global
     Guid TransferId
 ) : Event(EventId, OccurredAt);

@@ -7,6 +7,7 @@ namespace AccountService.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IEndpointRouteBuilder MapHealthEndpoints(this IEndpointRouteBuilder  app)
     {
         app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -24,26 +25,26 @@ public static class ApplicationBuilderExtensions
         return app;
     }
 
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IEndpointRouteBuilder MapSwaggerWithAuthUi(this IEndpointRouteBuilder endpoints, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment())
-        {
-            endpoints.MapOpenApi();
+        if (!env.IsDevelopment()) return endpoints;
+        endpoints.MapOpenApi();
 
-            var app = (endpoints as IApplicationBuilder) ?? throw new InvalidOperationException();
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Account Service");
-                options.OAuthClientId("myclient");
-                options.OAuthUsePkce();
-                options.OAuthScopeSeparator(" ");
-            });
-        }
+        var app = endpoints as IApplicationBuilder ?? throw new InvalidOperationException();
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "Account Service");
+            options.OAuthClientId("myclient");
+            options.OAuthUsePkce();
+            options.OAuthScopeSeparator(" ");
+        });
 
         return endpoints;
     }
 
+    // ReSharper disable once UnusedMethodReturnValue.Global
     public static IEndpointRouteBuilder MapHangfireDashboardWithAuth(this IEndpointRouteBuilder  app)
     {
         app.MapHangfireDashboard("/hangfire", new DashboardOptions
