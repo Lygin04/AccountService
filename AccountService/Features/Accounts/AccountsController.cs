@@ -1,4 +1,6 @@
 ﻿using AccountService.Common;
+using AccountService.Contracts;
+using AccountService.Features.Accounts.BlockedAccount;
 using AccountService.Features.Accounts.CreateAccount;
 using AccountService.Features.Accounts.DeleteAccount;
 using AccountService.Features.Accounts.GetAccount;
@@ -18,7 +20,7 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// <param name="createAccountResponseDto">Данные для создания счёта.</param>
     /// <returns>Статус 201 Created при успешном создании, или ошибки.</returns>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(AccountOpened), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,7 +87,7 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// <summary>
     /// Получает выписку всех счетов по идентификатору владельца.
     /// </summary>
-    /// <param name="ownerId">Идентификатору владельца.</param>
+    /// <param name="ownerId">Идентификатор владельца.</param>
     /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Выписка счетов и статус 200 OK, либо 404 если владелец не найден.</returns>
     [HttpGet("owner/{ownerId:guid}")]
@@ -105,7 +107,7 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Статус 201 Created при успешном переводе, или ошибки.</returns>
     [HttpPost("transfer")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(AccountOpened), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -116,5 +118,24 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
         return result.IsSuccess
             ? Created("", new { result.IsSuccess, result.Data, result.Error })
             : ToActionResult(result);
+    }
+
+    /// <summary>
+    /// Блокирует/Разблокирует все счета владельца.
+    /// </summary>
+    /// <param name="ownerId">Идентификатор владельца.</param>
+    /// <param name="isBlocked">true - заблокировать. false - разблокировать.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
+    [HttpPatch("owner/{Owner:guid}/blocked/{isBlocked:bool}")]
+    [ProducesResponseType(typeof(ClientBlocked), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ClientUnblocked), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SetBlockedByOwnerId(Guid ownerId, bool isBlocked,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new BlockedAccountMessage(ownerId, isBlocked), cancellationToken);
+
+        return ToActionResult(result);
     }
 }

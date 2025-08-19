@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using AccountService.Common.Enums;
+using AccountService.Contracts;
 using AccountService.Features.Accounts.CreateAccount;
 using AccountService.Features.Accounts.Models;
 using AccountService.Features.Accounts.Transfer;
@@ -8,7 +9,7 @@ using AccountService.Features.Transactions.Models;
 namespace AccountService.Tests;
 
 [Collection("IntegrationTests")]
-public class ParallelTransferTests(CustomWebApplicationFactory<ProgramPlaceholder> factory)
+public class IntegrationTests(CustomWebApplicationFactory<ProgramPlaceholder> factory)
     : IClassFixture<CustomWebApplicationFactory<ProgramPlaceholder>>
 {
     private readonly HttpClient _client = factory.CreateClient();

@@ -1,5 +1,10 @@
 namespace AccountService.Contracts;
 
+/// <summary>
+/// Абстрактный класс события.
+/// </summary>
+/// <param name="EventId">Идентификатор события.</param>
+/// <param name="OccurredAt">Дата создания события.</param>
 public record Event(
     Guid EventId,
     DateTime OccurredAt)

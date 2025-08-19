@@ -6,6 +6,7 @@ using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace AccountService.Extensions;
 
@@ -16,7 +17,7 @@ public static class ConfigurationExtensions
     /// </summary>
     /// <param name="services">Коллекция сервисов.</param>
     /// <param name="configuration">Конфигурационные настройки.</param>
-    public static void AddSwaggerWithAuth(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddSwaggerWithAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSwaggerGen(options =>
         {
@@ -66,6 +67,8 @@ public static class ConfigurationExtensions
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
         });
+        services.AddSwaggerExamplesFromAssemblyOf<Program>();
+        return services;
     }
     
     public static IServiceCollection AddApiControllers(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)

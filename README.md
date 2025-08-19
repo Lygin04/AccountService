@@ -29,8 +29,12 @@
 можем вызывать все конечные точки с атрибутом Authorize.
 
 ### Инструкция запуска тестов
-Перед началом теста нужно запустить контейнер и с тестовой бд. Вот команда для запуска контейнера и тестов
-`docker-compose -f compose.override.yaml up -d; dotnet test; docker-compose -f compose.override.yaml down -v`.
+Перед началом тестов нужно ОБЯЗАТЕЛЬНО снести рабочий контейнер командой `docker-compose down -v` запустить контейнер 
+с тестовой бд и RabbitMQ.\
+Вот команда для запуска тестового контейнера `docker-compose -f compose.override.yaml up -d` после закпуска подождите 
+30с чтобы бд и rabbitMQ успели запуститься.\
+Тесты запускаются командой `dotnet test; docker-compose -f compose.override.yaml down -v`.
+После выполнения тестов контейнер сам удалиться.
 
 ### Инструкци по открытию дашбордов
 ##### HangFire

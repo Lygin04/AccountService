@@ -6,7 +6,7 @@
       POSTGRES_PASSWORD: password
       POSTGRES_DB: bank_test
     networks:
-      - backend
+      - testbackend
     ports:
       - "50001:5432"
     volumes:
@@ -17,9 +17,28 @@
       timeout: 5s
       retries: 5
       
+  test-rabbitmq:
+    image: rabbitmq
+    container_name: test-rabbitmq
+    hostname: test-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq/rabbitmq_definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - testbackend
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
 volumes:
   postgres_test_database:
+  test_rabbitmq_data:
 
 networks:
-  backend:
+  testbackend:
     driver: bridge
