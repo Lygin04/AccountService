@@ -1,13 +1,12 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
-using AccountService.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using MediatR;
 
 namespace AccountService.Features.Accounts.UpdateAccount;
 
 public class UpdateAccountMessageHandler(
-    IFakeDataStorage fakeDataStorage,
+    IAccountRepository accountRepository,
     IValidator<UpdateAccountMessage> validator) : IMessageHandler<UpdateAccountMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(UpdateAccountMessage request, CancellationToken cancellationToken)
@@ -27,7 +26,7 @@ public class UpdateAccountMessageHandler(
             ));
         }
         
-        var account = await fakeDataStorage.GetAccountByIdAsync(request.AccountId);
+        var account = await accountRepository.GetByIdAsync(request.AccountId);
         
         if (account == null)
         {
@@ -37,11 +36,17 @@ public class UpdateAccountMessageHandler(
                 detail: $"Account with ID {request.AccountId} not found"
             ));
         }
+
+        var updateAccountResponseDto = new UpdateAccountResponseDto
+        {
+            Balance = request.AccountDto.Balance,
+            InterestRate = request.AccountDto.InterestRate
+        };
         
         account.Balance = request.AccountDto.Balance;
         account.InterestRate = request.AccountDto.InterestRate;
         
-        await fakeDataStorage.UpdateAccountAsync(account);
+        await accountRepository.UpdateAsync(account.Id, updateAccountResponseDto);
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

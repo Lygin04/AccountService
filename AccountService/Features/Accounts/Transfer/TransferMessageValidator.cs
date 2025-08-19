@@ -18,11 +18,9 @@ public class TransferMessageValidator: AbstractValidator<TransferMessage>
             .GreaterThan(0);
 
         RuleFor(x => x.TransferDto.Currency)
-            .NotEmpty()
             .IsInEnum();
         
         RuleFor(x => x.TransferDto.Type)
-            .NotEmpty()
             .IsInEnum();
     }
 }

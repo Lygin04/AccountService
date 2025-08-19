@@ -2,11 +2,12 @@
 
 namespace AccountService.Features.Transactions.Models;
 
-public class Transaction
+public class DbTransaction
 {
     /// <summary>
     /// Идентификатор транзакции.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public Guid Id { get; init; }
     
     /// <summary>

@@ -23,3 +23,7 @@ http://localhost:8080/swagger/index.html
 после чего еще раз нажать кнопку `Authorize`. Далее нас перебрасывает на страницу аутентификации где нужно заполнить 
 поля `Username or email: testuser` `Password: testpass` и нажать кнопку sign in. На этом аутентификации завершена и мы 
 можем вызывать все конечные точки с атрибутом Authorize.
+
+### Инструкция запуска тестов
+Перед началом теста нужно запустить контейнер и с тестовой бд. Вот команда для запуска контейнера и тестов
+`docker-compose -f compose.override.yaml up -d; dotnet test; docker-compose -f compose.override.yaml down -v`. 

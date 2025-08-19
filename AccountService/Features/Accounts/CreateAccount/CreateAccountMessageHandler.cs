@@ -2,14 +2,13 @@
 using AccountService.Common.Abstractions;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
-using AccountService.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using MediatR;
 
 namespace AccountService.Features.Accounts.CreateAccount;
 
 public class CreateAccountMessageHandler(
-    IFakeDataStorage fakeDataStorage,
+    IAccountRepository accountRepository,
     IClientVerificationService clientVerification,
     ICurrencyService currencyService,
     IValidator<CreateAccountMessage> validator) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
@@ -49,7 +48,7 @@ public class CreateAccountMessageHandler(
             ));
         }
 
-        var account = new Account
+        var account = new DbAccount
         {
             Id = Guid.NewGuid(),
             OwnerId = request.CreateAccountResponseDto.OwnerId,
@@ -60,7 +59,7 @@ public class CreateAccountMessageHandler(
             OpenDate = DateTime.UtcNow
         };
 
-        await fakeDataStorage.AddAccountAsync(account);
+        await accountRepository.AddAsync(account);
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

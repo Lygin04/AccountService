@@ -36,15 +36,17 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// </summary>
     /// <param name="accountId">Идентификатор счёта.</param>
     /// <param name="accountDto">Данные для обновления счёта.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Статус 204 No Content при успешном обновлении, или ошибки.</returns>
     [HttpPatch("{accountId:guid}")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update(Guid accountId, UpdateAccountResponseDto accountDto)
+    public async Task<IActionResult> Update(Guid accountId, UpdateAccountResponseDto accountDto,
+        CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new UpdateAccountMessage(accountId, accountDto));
-        
+        var result = await mediator.Send(new UpdateAccountMessage(accountId, accountDto), cancellationToken);
+
         return ToActionResult(result);
     }
 
@@ -52,13 +54,14 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// Удаляет счёт по идентификатору.
     /// </summary>
     /// <param name="accountId">Идентификатор счёта.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Статус 204 No Content при успешном удалении, или 404 если не найден.</returns>
     [HttpDelete("{accountId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(Guid accountId)
+    public async Task<IActionResult> Delete(Guid accountId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new DeleteAccountMessage(accountId));
+        var result = await mediator.Send(new DeleteAccountMessage(accountId), cancellationToken);
 
         return ToActionResult(result);
     }
@@ -67,13 +70,14 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// Получает счёт по идентификатору.
     /// </summary>
     /// <param name="accountId">Идентификатор счёта.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Данные счёта и статус 200 OK, либо 404 если счёт не найден.</returns>
     [HttpGet("{accountId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(Guid accountId)
+    public async Task<IActionResult> GetById(Guid accountId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new GetAccountMessage(accountId));
+        var result = await mediator.Send(new GetAccountMessage(accountId), cancellationToken);
         
         return ToActionResult(result);
     }
@@ -82,13 +86,14 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// Получает выписку всех счетов по идентификатору владельца.
     /// </summary>
     /// <param name="ownerId">Идентификатору владельца.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Выписка счетов и статус 200 OK, либо 404 если владелец не найден.</returns>
     [HttpGet("owner/{ownerId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetByOwnerId(Guid ownerId)
+    public async Task<IActionResult> GetByOwnerId(Guid ownerId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new GetAccountsByOwnerIdMessage(ownerId));
+        var result = await mediator.Send(new GetAccountsByOwnerIdMessage(ownerId), cancellationToken);
         
         return ToActionResult(result);
     }
@@ -97,14 +102,16 @@ public class AccountsController(IMediator mediator) : ApiControllerV1WithAuth
     /// Переводит средства между счетами.
     /// </summary>
     /// <param name="transferDto">Данные перевода.</param>
+    /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Статус 201 Created при успешном переводе, или ошибки.</returns>
     [HttpPost("transfer")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Transfer(TransferResponseDto transferDto)
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Transfer(TransferResponseDto transferDto, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new TransferMessage(transferDto));
+        var result = await mediator.Send(new TransferMessage(transferDto), cancellationToken);
         
         return result.IsSuccess
             ? Created("", new { result.IsSuccess, result.Data, result.Error })

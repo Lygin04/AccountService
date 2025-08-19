@@ -12,7 +12,11 @@
     networks:
       - backend
     depends_on:
-      - keycloak
+      keycloak:
+        condition: service_started
+      database:
+        condition: service_healthy
+      
         
   keycloak:
     image: quay.io/keycloak/keycloak
@@ -20,8 +24,8 @@
     ports:
       - "8180:8180"
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HTTP_ENABLED: true
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
@@ -31,7 +35,29 @@
       - ./keycloak:/opt/keycloak/data/import
     networks:
       - backend
+      
+  database:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: 'bank'
+    networks:
+      - backend
+    ports:
+      - "50000:5432"
+    volumes:
+      - postgres_database:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
         
 networks:
   backend:
     driver: bridge
+    
+volumes:
+  postgres_database:

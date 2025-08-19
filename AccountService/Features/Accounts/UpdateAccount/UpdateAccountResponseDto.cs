@@ -6,10 +6,12 @@ public class UpdateAccountResponseDto
     /// <summary>
     /// Баланс.
     /// </summary>
-    public decimal Balance { get; set; }
+    public decimal Balance { get; init; }
 
     /// <summary>
     /// Процентная ставка (decimal, опционально — только для Deposit и Credit).
     /// </summary>
-    public decimal? InterestRate { get; set; }
+    public decimal? InterestRate { get; init; }
+    
+    public int Xmin { get; set; }
 }

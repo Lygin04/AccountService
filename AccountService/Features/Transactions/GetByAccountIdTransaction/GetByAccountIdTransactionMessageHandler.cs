@@ -1,28 +1,30 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
-using AccountService.Infrastructure.Repositories.Interfaces;
 
 namespace AccountService.Features.Transactions.GetByAccountIdTransaction;
 
-public class GetByAccountIdTransactionMessageHandler(IFakeDataStorage fakeDataStorage)
-    : IMessageHandler<GetByAccountIdTransactionMessage, MbResult<List<Transaction>>>
+public class GetByAccountIdTransactionMessageHandler(
+    ITransactionRepository transactionRepository,
+    IAccountRepository accountRepository)
+    : IMessageHandler<GetByAccountIdTransactionMessage, MbResult<List<DbTransaction>>>
 {
-    public async Task<MbResult<List<Transaction>>> Handle(GetByAccountIdTransactionMessage request,
+    public async Task<MbResult<List<DbTransaction>>> Handle(GetByAccountIdTransactionMessage request,
         CancellationToken cancellationToken)
     {
-        if (!await fakeDataStorage.ExistsAccountAsync(request.AccountId))
+        if (!await accountRepository.ExistsAsync(request.AccountId))
         {
-            return MbResult<List<Transaction>>.Failure(new MbError(
+            return MbResult<List<DbTransaction>>.Failure(new MbError(
                 title: "Not Found",
                 status: StatusCodes.Status404NotFound,
                 detail: $"Account with ID {request.AccountId} not found"
             ));
         }
 
-        var transactions = await fakeDataStorage.GetTransactionsByAccountIdAsync(request.AccountId);
+        var transactions = await transactionRepository.GetByAccountIdAsync(request.AccountId);
 
-        return MbResult<List<Transaction>>.Success(transactions);
+        return MbResult<List<DbTransaction>>.Success(transactions);
 
     }
 }

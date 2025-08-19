@@ -3,7 +3,7 @@ using AccountService.Features.Transactions.Models;
 
 namespace AccountService.Features.Accounts.Models;
 
-public class Account
+public class DbAccount
 {
     /// <summary>
     /// Идентификатор счета.
@@ -13,16 +13,19 @@ public class Account
     /// <summary>
     /// Идентификатор владельца счета.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public Guid OwnerId { get; set; }
     
     /// <summary>
     /// Тип (Checking | Deposit | Credit).
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public AccountType Type { get; set; }
     
     /// <summary>
     /// Валюта (ISO 4217).
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public IsoCurrency Currency { get; set; }
     
     /// <summary>
@@ -38,15 +41,21 @@ public class Account
     /// <summary>
     /// Дата открытия.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public DateTime OpenDate { get; set; }
     
     /// <summary>
     /// Дата закрытия (опционально).
     /// </summary>
+    // ReSharper disable once UnusedMember.Global
     public DateTime? CloseDate { get; set; }
+    
+    // ReSharper disable once UnusedMember.Global
+    public int Xmin { get; set; }
     
     /// <summary>
     /// Коллекция транзакций.
     /// </summary>
-    public List<Transaction>? Transactions { get; set; }
+    // ReSharper disable once CollectionNeverUpdated.Global
+    public List<DbTransaction>? Transactions { get; set; }
 }
