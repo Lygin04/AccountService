@@ -6,6 +6,7 @@ SELECT id               AS Id,
        interest_rate    AS InterestRate,
        open_date        AS OpenDate,
        close_date       AS CloseDate,
+       is_blocked       AS IsBlocked,
        xmin             AS Xmin
 FROM accounts
 WHERE id = @Id;

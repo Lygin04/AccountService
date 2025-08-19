@@ -48,7 +48,7 @@ public class TransferMessageHandler(
             ));
         }
         
-        if (account.Frozen)
+        if (account.IsBlocked)
         {
             return MbResult<Unit>.Failure(new MbError(
                 title: "Account Blocked",
@@ -66,7 +66,7 @@ public class TransferMessageHandler(
             ));
         }
         
-        if (account.Frozen)
+        if (account.IsBlocked)
         {
             return MbResult<Unit>.Failure(new MbError(
                 title: "Account Blocked",

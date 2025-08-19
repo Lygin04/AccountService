@@ -56,7 +56,10 @@ public class DbAccount
     public int Xmin { get; set; }
     
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public bool Frozen { get; set; }
+    /// <summary>
+    /// Флаг блокировки счета.
+    /// </summary>
+    public bool IsBlocked { get; set; } = false;
     
     /// <summary>
     /// Коллекция транзакций.

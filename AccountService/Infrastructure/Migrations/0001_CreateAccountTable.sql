@@ -7,6 +7,7 @@ CREATE TABLE accounts (
     currency_code INTEGER NOT NULL,
     balance NUMERIC(18, 2) NOT NULL DEFAULT 0.00,
     interest_rate NUMERIC(5, 2),
+    is_blocked BOOLEAN NOT NULL DEFAULT false,
     open_date TIMESTAMP NOT NULL,
     close_date TIMESTAMP
 );

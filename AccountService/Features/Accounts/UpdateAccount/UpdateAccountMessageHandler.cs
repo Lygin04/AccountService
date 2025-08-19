@@ -37,7 +37,7 @@ public class UpdateAccountMessageHandler(
             ));
         }
 
-        if (account.Frozen)
+        if (account.IsBlocked)
         {
             return MbResult<Unit>.Failure(new MbError(
                 title: "Account Blocked",
