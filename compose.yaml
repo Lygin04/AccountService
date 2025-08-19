@@ -21,7 +21,7 @@
         condition: service_healthy
   
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:management
     container_name: rabbitmq
     hostname: rabbitmq
     ports:
