@@ -56,6 +56,15 @@ public class CreateTransactionMessageHandler(
                 detail: $"Account with ID {transaction.AccountId} not found"
             ));
         }
+        
+        if (account.Frozen)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {account.Id} blocked"
+            ));
+        }
 
         if (transaction.Type == TransactionType.Debit)
         {

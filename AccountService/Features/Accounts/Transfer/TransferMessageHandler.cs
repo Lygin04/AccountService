@@ -49,6 +49,15 @@ public class TransferMessageHandler(
                 detail: $"Account with ID {request.TransferDto.AccountId} not found"
             ));
         }
+        
+        if (account.Frozen)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {account.Id} blocked"
+            ));
+        }
 
         if (counterpartyAccount == null)
         {
@@ -56,6 +65,15 @@ public class TransferMessageHandler(
                 title: "Not Found",
                 status: StatusCodes.Status404NotFound,
                 detail: $"Counterparty account with ID {request.TransferDto.CounterpartyAccountId} not found"
+            ));
+        }
+        
+        if (account.Frozen)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {counterpartyAccount.Id} blocked"
             ));
         }
         
