@@ -23,39 +23,60 @@ public class OutboxDispatcher(
         if (count > 100)
             logger.LogWarning("Outbox backlog exceeded threshold (Count={Count}).", count);
 
-        using var channel = rabbitMqConnection.Connection!.CreateModel();
-        channel.ExchangeDeclare("account.events", ExchangeType.Topic, durable: true);
-
-        foreach (var m in due)
+        IModel? channel = null;
+        try
         {
-            try
+            channel = rabbitMqConnection.Connection!.CreateModel();
+            channel.ExchangeDeclare("account.events", ExchangeType.Topic, durable: true);
+
+            foreach (var m in due)
             {
-                var props = channel.CreateBasicProperties();
-                props.ContentType = "application/json";
+                try
+                {
+                    var props = channel.CreateBasicProperties();
+                    props.ContentType = "application/json";
 
-                // Заголовки
-                var headers = JsonSerializer.Deserialize<Dictionary<string, object>>(m.HeadersJson) ?? new Dictionary<string, object>();
-                props.Headers = headers.ToDictionary(k => k.Key, object (v) => Encoding.UTF8.GetBytes(v.Value.ToString()!));
+                    // Заголовки
+                    var headers = JsonSerializer.Deserialize<Dictionary<string, object>>(m.HeadersJson) ??
+                                  new Dictionary<string, object>();
+                    props.Headers = headers.ToDictionary(k => k.Key,
+                        object (v) => Encoding.UTF8.GetBytes(v.Value.ToString()!));
 
-                var body = Encoding.UTF8.GetBytes(m.PayloadJson);
+                    var body = Encoding.UTF8.GetBytes(m.PayloadJson);
 
-                var t0 = DateTime.UtcNow;
-                channel.BasicPublish("account.events", m.RoutingKey, props, body);
-                var latency = (DateTime.UtcNow - t0).TotalMilliseconds;
+                    var t0 = DateTime.UtcNow;
+                    channel.BasicPublish("account.events", m.RoutingKey, props, body);
+                    var latency = (DateTime.UtcNow - t0).TotalMilliseconds;
 
-                logger.LogInformation("OUTBOX Published: {EventId} {Type} rk={RoutingKey} attempts={Attempts} latencyMs={Latency}",
-                    m.Id, m.Type, m.RoutingKey, m.Attempts, latency);
+                    logger.LogInformation(
+                        "OUTBOX Published: {EventId} {Type} rk={RoutingKey} attempts={Attempts} latencyMs={Latency}",
+                        m.Id, m.Type, m.RoutingKey, m.Attempts, latency);
 
-                await outboxRepository.MarkPublishedAsync(m.Id);
+                    await outboxRepository.MarkPublishedAsync(m.Id);
+                }
+                catch (Exception ex)
+                {
+                    var next = CalcNextAttemptUtc(m.Attempts + 1);
+                    logger.LogWarning(ex,
+                        "OUTBOX Publish failed: {EventId} {Type} attempts={Attempts}. NextAttemptAt={Next}",
+                        m.Id, m.Type, m.Attempts + 1, next);
+
+                    await outboxRepository.MarkFailedAsync(m.Id, next);
+                }
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to create RabbitMQ channel. Messages will remain in outbox.");
+            foreach (var msg in due)
             {
-                var next = CalcNextAttemptUtc(m.Attempts + 1);
-                logger.LogWarning(ex, "OUTBOX Publish failed: {EventId} {Type} attempts={Attempts}. NextAttemptAt={Next}",
-                    m.Id, m.Type, m.Attempts + 1, next);
-
-                await outboxRepository.MarkFailedAsync(m.Id, next);
+                await outboxRepository.MarkFailedAsync(msg.Id, DateTime.UtcNow.AddSeconds(1));   
             }
+        }
+        finally
+        {
+            channel?.Close();
+            channel?.Dispose();
         }
     }
 
