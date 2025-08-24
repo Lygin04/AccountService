@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AccountService.Common;
+namespace AccountService.Common.Abstractions;
 
 [ApiController]
 [Route("v1/[controller]")]

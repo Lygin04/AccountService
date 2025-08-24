@@ -13,4 +13,6 @@ public interface IAccountRepository
     Task<List<DbAccount>> GetByOwnerIdAsync(Guid ownerId);
     Task<List<Guid>> GetAllAccountIdsAsync();
     Task<bool> ExistsAsync(Guid accountId);
+    // ReSharper disable once UnusedParameter.Global
+    Task SetFrozenByOwnerAsync(Guid ownerId, bool frozen, ITransaction? transaction = null);
 }

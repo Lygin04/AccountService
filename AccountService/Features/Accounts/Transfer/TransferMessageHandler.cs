@@ -1,10 +1,12 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Accounts.UpdateAccount;
 using AccountService.Features.Transactions;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.Models;
 using AccountService.Infrastructure.Dapper.Interfaces;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -14,7 +16,8 @@ public class TransferMessageHandler(
     IAccountRepository accountRepository,
     IMediator mediator,
     IDapperContext<IDapperSettings> dapperContext,
-    IValidator<TransferMessage> validator) : IMessageHandler<TransferMessage, MbResult<Unit>>
+    IValidator<TransferMessage> validator,
+    IOutboxWriter outboxWriter) : IMessageHandler<TransferMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(TransferMessage request, CancellationToken cancellationToken)
     {
@@ -44,6 +47,15 @@ public class TransferMessageHandler(
                 detail: $"Account with ID {request.TransferDto.AccountId} not found"
             ));
         }
+        
+        if (account.IsBlocked)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {account.Id} blocked"
+            ));
+        }
 
         if (counterpartyAccount == null)
         {
@@ -51,6 +63,15 @@ public class TransferMessageHandler(
                 title: "Not Found",
                 status: StatusCodes.Status404NotFound,
                 detail: $"Counterparty account with ID {request.TransferDto.CounterpartyAccountId} not found"
+            ));
+        }
+        
+        if (account.IsBlocked)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {counterpartyAccount.Id} blocked"
             ));
         }
         
@@ -141,6 +162,17 @@ public class TransferMessageHandler(
                 $"Отправил на счет {account.Id} от {counterpartyAccount.Id} сумму {request.TransferDto.Amount}";
 
             await mediator.Send(new CreateTransactionMessage(transaction), cancellationToken);
+
+            var payload = new TransferCompleted(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                counterpartyAccount.Id,
+                request.TransferDto.Amount,
+                request.TransferDto.Currency,
+                Guid.NewGuid());        // TODO: Подумать что с этим делать
+
+            await outboxWriter.WriteAsync("account.audit", payload, transactionDb);
             
             transactionDb.Commit();
         }

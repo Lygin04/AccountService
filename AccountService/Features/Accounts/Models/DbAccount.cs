@@ -1,4 +1,5 @@
-﻿using AccountService.Common.Enums;
+﻿using System.Text.Json.Serialization;
+using AccountService.Common.Enums;
 using AccountService.Features.Transactions.Models;
 
 namespace AccountService.Features.Accounts.Models;
@@ -14,19 +15,19 @@ public class DbAccount
     /// Идентификатор владельца счета.
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public Guid OwnerId { get; set; }
+    public Guid OwnerId { get; init; }
     
     /// <summary>
     /// Тип (Checking | Deposit | Credit).
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public AccountType Type { get; set; }
+    public AccountType Type { get; init; }
     
     /// <summary>
     /// Валюта (ISO 4217).
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public IsoCurrency Currency { get; set; }
+    public IsoCurrency Currency { get; init; }
     
     /// <summary>
     /// Баланс.
@@ -51,7 +52,14 @@ public class DbAccount
     public DateTime? CloseDate { get; set; }
     
     // ReSharper disable once UnusedMember.Global
+    [JsonIgnore]
     public int Xmin { get; set; }
+    
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    /// <summary>
+    /// Флаг блокировки счета.
+    /// </summary>
+    public bool IsBlocked { get; set; } = false;
     
     /// <summary>
     /// Коллекция транзакций.

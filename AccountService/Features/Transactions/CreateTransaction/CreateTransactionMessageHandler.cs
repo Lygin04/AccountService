@@ -1,7 +1,10 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Accounts;
 using AccountService.Features.Transactions.Models;
+using AccountService.Infrastructure.Dapper.Interfaces;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -10,7 +13,9 @@ namespace AccountService.Features.Transactions.CreateTransaction;
 public class CreateTransactionMessageHandler(
     ITransactionRepository transactionRepository,
     IAccountRepository accountRepository,
-    IValidator<CreateTransactionMessage> validator) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
+    IValidator<CreateTransactionMessage> validator,
+    IOutboxWriter outboxWriter,
+    IDapperContext<IDapperSettings> dapperContext) : IMessageHandler<CreateTransactionMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateTransactionMessage request, CancellationToken cancellationToken)
     {
@@ -50,6 +55,15 @@ public class CreateTransactionMessageHandler(
                 detail: $"Account with ID {transaction.AccountId} not found"
             ));
         }
+        
+        if (account.IsBlocked)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {account.Id} blocked"
+            ));
+        }
 
         if (transaction.Type == TransactionType.Debit)
         {
@@ -70,8 +84,46 @@ public class CreateTransactionMessageHandler(
 
         account.Transactions ??= [];
 
-        await transactionRepository.AddAsync(transaction);
-        
+        using var transactionDb = dapperContext.BeginTransaction();
+        try
+        {
+            await transactionRepository.AddAsync(transaction, transactionDb);
+
+            Event? payload = transaction.Type switch
+            {
+                TransactionType.Credit => new MoneyCredited(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    account.Id,
+                    transaction.Amount,
+                    transaction.Currency,
+                    transaction.Id),
+
+                TransactionType.Debit => new MoneyDebited(
+                    Guid.NewGuid(),
+                    DateTime.UtcNow,
+                    account.Id,
+                    transaction.Amount,
+                    transaction.Currency,
+                    transaction.Id,
+                    ""), // TODO: Подумать что с этим можно сделать
+
+                _ => null
+            };
+
+            if (payload != null)
+            {
+                await outboxWriter.WriteAsync("account.notifications", payload, transactionDb);
+            }
+            
+            transactionDb.Commit();
+        }
+        catch
+        {
+            transactionDb.Rollback();
+            throw;
+        }
+
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

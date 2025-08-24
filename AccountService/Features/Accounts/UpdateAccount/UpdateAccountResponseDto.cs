@@ -1,4 +1,7 @@
 ﻿// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+using System.Text.Json.Serialization;
+
 namespace AccountService.Features.Accounts.UpdateAccount;
 
 public class UpdateAccountResponseDto
@@ -13,5 +16,6 @@ public class UpdateAccountResponseDto
     /// </summary>
     public decimal? InterestRate { get; init; }
     
+    [JsonIgnore]
     public int Xmin { get; set; }
 }

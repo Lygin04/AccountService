@@ -37,6 +37,15 @@ public class UpdateAccountMessageHandler(
             ));
         }
 
+        if (account.IsBlocked)
+        {
+            return MbResult<Unit>.Failure(new MbError(
+                title: "Account Blocked",
+                status: StatusCodes.Status400BadRequest,
+                detail: $"Account with ID {request.AccountId} blocked"
+            ));
+        }
+
         var updateAccountResponseDto = new UpdateAccountResponseDto
         {
             Balance = request.AccountDto.Balance,

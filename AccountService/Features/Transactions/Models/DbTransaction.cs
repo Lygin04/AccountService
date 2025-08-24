@@ -30,7 +30,7 @@ public class DbTransaction
     /// Валюта.
     /// </summary>
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public IsoCurrency Currency { get; set; }
+    public IsoCurrency Currency { get; init; }
     
     /// <summary>
     /// Тип (Credit | Debit).

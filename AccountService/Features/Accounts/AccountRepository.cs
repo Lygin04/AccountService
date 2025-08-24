@@ -49,4 +49,10 @@ public class AccountRepository(IDapperContext<IDapperSettings> dapperContext) : 
         return await dapperContext.CommandWithResponse<bool>(
             new QueryObject(Account.ExistsById, new { Id = accountId }));
     }
+
+    public async Task SetFrozenByOwnerAsync(Guid ownerId, bool frozen, ITransaction? transaction = null)
+    {
+        await dapperContext.Command(new QueryObject(Account.SetFrozenByOwner,
+            new { OwnerId = ownerId, Frozen = frozen }));
+    }
 }

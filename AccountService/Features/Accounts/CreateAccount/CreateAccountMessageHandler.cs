@@ -1,7 +1,10 @@
 ﻿using AccountService.Common;
 using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Accounts.Models;
 using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.Dapper.Interfaces;
+using AccountService.Infrastructure.Outbox.Interfaces;
 using FluentValidation;
 using MediatR;
 
@@ -11,7 +14,9 @@ public class CreateAccountMessageHandler(
     IAccountRepository accountRepository,
     IClientVerificationService clientVerification,
     ICurrencyService currencyService,
-    IValidator<CreateAccountMessage> validator) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
+    IValidator<CreateAccountMessage> validator,
+    IOutboxWriter outboxWriter,
+    IDapperContext<IDapperSettings> dapperContext) : IMessageHandler<CreateAccountMessage, MbResult<Unit>>
 {
     public async Task<MbResult<Unit>> Handle(CreateAccountMessage request, CancellationToken cancellationToken)
     {
@@ -58,8 +63,30 @@ public class CreateAccountMessageHandler(
             InterestRate = request.CreateAccountResponseDto.InterestRate,
             OpenDate = DateTime.UtcNow
         };
+        
+        using var transaction = dapperContext.BeginTransaction();
+        try
+        {
+            await accountRepository.AddAsync(account, transaction);
 
-        await accountRepository.AddAsync(account);
+            var payload = new AccountOpened(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                account.Id,
+                account.OwnerId,
+                account.Currency,
+                account.Type);
+
+            await outboxWriter.WriteAsync("account.opened", payload, transaction);
+            
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+
         return MbResult<Unit>.Success(Unit.Value);
     }
 }

@@ -1,20 +1,29 @@
-using AccountService.Common;
 using AccountService.Extensions;
 using AccountService.Infrastructure;
-using AccountService.Infrastructure.Clients;
-using AccountService.Infrastructure.Clients.Interfaces;
+using AccountService.Infrastructure.Outbox;
 using AccountService.Middleware;
 using Hangfire;
-using Hangfire.PostgreSql;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "AccountService")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+InfrastructureHostExtensions.MigrateDatabase(configuration);
+builder.Services.AddDapper();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
+builder.Services.AddInfrastructure(configuration);
+builder.Services.AddFluentValidation();
 
 if (!builder.Environment.IsEnvironment("Test"))
 {
@@ -24,46 +33,19 @@ if (!builder.Environment.IsEnvironment("Test"))
     builder.Services.AddAuthorization();
 }
 
-builder.Services.MigrateDatabase(configuration);
-builder.Services.AddDapper();
-
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
-builder.Services.AddInfrastructure();
-builder.Services.AddSingleton<IClientVerificationService, ClientVerificationStub>();
-builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
-builder.Services.AddFluentValidation();
 
-if (!builder.Environment.IsEnvironment("Test"))
-{
-    builder.Services.AddControllers(options =>
-    {
-        options.Filters.Add(new AuthorizeFilter(new AuthorizationPolicyBuilder()
-            .RequireAuthenticatedUser()
-            .Build()));
-    });
-}
-else
-{
-    builder.Services.AddControllers();
-}
-
-builder.Services.AddHangfire(config =>
-{
-#pragma warning disable CS0618 // Type or member is obsolete
-    config.UsePostgreSqlStorage(configuration["BankDataBase:ConnectionString"]);
-#pragma warning restore CS0618 // Type or member is obsolete
-});
-
-builder.Services.AddHangfireServer();
+builder.Services.AddApiControllers(builder.Environment);
+builder.Services.AddHealthChecksWithDependencies(configuration);
+builder.Services.AddHangfireWithPostgres(configuration);
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    var recurringJobs = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
 
-    recurringJobManager.AddOrUpdate<AccrueInterestHandler>(
+    recurringJobs.AddOrUpdate<AccrueInterestHandler>(
         "accrue-interest-daily",
         handler => handler.HandleAsync(),
         Cron.Daily(0, 0),
@@ -71,6 +53,16 @@ using (var scope = app.Services.CreateScope())
         {
             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time")
         });
+
+    recurringJobs.AddOrUpdate<OutboxDispatcher>(
+        "outbox-dispatcher",
+        d => d.DispatchBatch(),
+        "*/10 * * * * *");
+    
+    recurringJobs.AddOrUpdate<InboxConsumer>(
+        "inbox-consumer",
+        x => x.ConsumeAsync(),
+        "*/1 * * * * *");
 }
 
 app.UseCors(cors =>
@@ -86,30 +78,16 @@ if (!app.Environment.IsEnvironment("Test"))
     app.UseAuthorization();
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Account Service");
-
-        options.OAuthClientId("myclient");
-        options.OAuthUsePkce();
-        options.OAuthScopeSeparator(" ");
-    });
-}
-
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-app.MapHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = [new AllowAllDashboardAuthorizationFilter()]
-}).AllowAnonymous();
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<HttpLoggingMiddleware>();
 
 app.MapControllers();
+app.MapHealthEndpoints();
+app.MapSwaggerWithAuthUi(app.Environment);
+app.MapHangfireDashboardWithAuth();
+
 app.Run();
 
 #pragma warning disable CA1050

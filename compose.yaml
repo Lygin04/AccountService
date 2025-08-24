@@ -6,7 +6,8 @@
       dockerfile: AccountService/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      restart: always
+      RESTART: always
+      RABBITMQ_HOST: rabbitmq
     ports:
       - "8080:8080"
     networks:
@@ -16,8 +17,27 @@
         condition: service_started
       database:
         condition: service_healthy
-      
-        
+      rabbitmq:
+        condition: service_healthy
+  
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672" 
+      - "15672:15672" 
+    volumes:
+      - ./rabbitmq/rabbitmq_definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  
   keycloak:
     image: quay.io/keycloak/keycloak
     container_name: keycloak
@@ -35,7 +55,7 @@
       - ./keycloak:/opt/keycloak/data/import
     networks:
       - backend
-      
+  
   database:
     image: postgres
     restart: always
@@ -54,10 +74,11 @@
       interval: 5s
       timeout: 5s
       retries: 5
-        
+
 networks:
   backend:
     driver: bridge
-    
+
 volumes:
   postgres_database:
+  rabbitmq_data:

@@ -21,7 +21,7 @@ public class CreateAccountResponseDto
     public IsoCurrency Currency { get; init; }
     
     /// <summary>
-    /// Баланс.
+    /// Баланс (для тестов).
     /// </summary>
     public decimal Balance { get; init; }
 

@@ -1,4 +1,5 @@
-﻿using AccountService.Common;
+﻿using AccountService.Common.Abstractions;
+using AccountService.Contracts;
 using AccountService.Features.Transactions.CreateTransaction;
 using AccountService.Features.Transactions.GetByAccountIdTransaction;
 using MediatR;
@@ -15,7 +16,8 @@ public class TransactionsController(IMediator mediator) : ApiControllerV1WithAut
     /// <param name="cancellationToken">Токен для отмены асинхронной операции.</param>
     /// <returns>Статус 201 Created при успешном создании, или ошибки.</returns>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(MoneyCredited), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(MoneyDebited), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(TransactionDto transactionDto, CancellationToken cancellationToken)

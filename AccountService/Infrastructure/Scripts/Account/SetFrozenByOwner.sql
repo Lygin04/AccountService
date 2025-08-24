@@ -1,0 +1,1 @@
+UPDATE accounts SET is_blocked = @Frozen WHERE owner_id = @OwnerId

@@ -17,7 +17,7 @@ public class AccountBusinessLogicTests
         {
             OwnerId = Guid.NewGuid(),
             Type = AccountType.Checking,
-            Currency = IsoCurrency.Usd,
+            Currency = IsoCurrency.USD,
             Balance = 1000,
             InterestRate = null
         };
@@ -26,7 +26,7 @@ public class AccountBusinessLogicTests
         dto.Should().NotBeNull();
         dto.OwnerId.Should().NotBeEmpty();
         dto.Type.Should().Be(AccountType.Checking);
-        dto.Currency.Should().Be(IsoCurrency.Usd);
+        dto.Currency.Should().Be(IsoCurrency.USD);
         dto.Balance.Should().Be(1000);
         dto.InterestRate.Should().BeNull();
     }
@@ -41,7 +41,7 @@ public class AccountBusinessLogicTests
         {
             OwnerId = Guid.NewGuid(),
             Type = accountType,
-            Currency = IsoCurrency.Eur,
+            Currency = IsoCurrency.EUR,
             Balance = 500,
             InterestRate = interestRate
         };
@@ -59,7 +59,7 @@ public class AccountBusinessLogicTests
             AccountId = Guid.NewGuid(),
             CounterpartyAccountId = Guid.NewGuid(),
             Amount = 100,
-            Currency = IsoCurrency.Usd,
+            Currency = IsoCurrency.USD,
             Type = TransactionType.Debit
         };
 

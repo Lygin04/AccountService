@@ -60,8 +60,8 @@ namespace AccountService.Infrastructure.Scripts.Account {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to INSERT INTO accounts (owner_id, type, currency_code, balance, interest_rate, open_date, close_date)
-        ///VALUES (
+        ///   Looks up a localized string similar to INSERT INTO accounts (id, owner_id, type, currency_code, balance, interest_rate, open_date, close_date)
+        ///VALUES (@Id,
         ///        @OwnerId,
         ///        @Type,
         ///        @Currency,
@@ -140,6 +140,15 @@ namespace AccountService.Infrastructure.Scripts.Account {
         internal static string GetByOwnerId {
             get {
                 return ResourceManager.GetString("GetByOwnerId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE accounts SET frozen = @Frozen WHERE owner_id = @OwnerId.
+        /// </summary>
+        internal static string SetFrozenByOwner {
+            get {
+                return ResourceManager.GetString("SetFrozenByOwner", resourceCulture);
             }
         }
         
