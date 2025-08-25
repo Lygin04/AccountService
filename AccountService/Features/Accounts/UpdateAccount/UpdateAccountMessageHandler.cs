@@ -41,7 +41,7 @@ public class UpdateAccountMessageHandler(
         {
             return MbResult<Unit>.Failure(new MbError(
                 title: "Account Blocked",
-                status: StatusCodes.Status400BadRequest,
+                status: StatusCodes.Status409Conflict,
                 detail: $"Account with ID {request.AccountId} blocked"
             ));
         }

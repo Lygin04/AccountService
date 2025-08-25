@@ -52,7 +52,7 @@ public class TransferMessageHandler(
         {
             return MbResult<Unit>.Failure(new MbError(
                 title: "Account Blocked",
-                status: StatusCodes.Status400BadRequest,
+                status: StatusCodes.Status409Conflict,
                 detail: $"Account with ID {account.Id} blocked"
             ));
         }
@@ -70,7 +70,7 @@ public class TransferMessageHandler(
         {
             return MbResult<Unit>.Failure(new MbError(
                 title: "Account Blocked",
-                status: StatusCodes.Status400BadRequest,
+                status: StatusCodes.Status409Conflict,
                 detail: $"Account with ID {counterpartyAccount.Id} blocked"
             ));
         }
