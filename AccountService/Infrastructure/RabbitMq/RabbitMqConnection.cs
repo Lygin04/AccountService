@@ -5,11 +5,12 @@ namespace AccountService.Infrastructure.RabbitMq;
 
 public class RabbitMqConnection : IRabbitMqConnection, IDisposable
 {
-    private readonly IConnection? _connection;
-
+    private IConnection? _connection;
+    private readonly ConnectionFactory _factory;
+    
     public RabbitMqConnection(IConfiguration configuration)
     {
-        var factory = new ConnectionFactory
+        _factory = new ConnectionFactory
         {
             HostName = configuration["RabbitMQ:HostName"]!,
             Port = int.Parse(configuration["RabbitMQ:Port"]!),
@@ -19,11 +20,16 @@ public class RabbitMqConnection : IRabbitMqConnection, IDisposable
             DispatchConsumersAsync = true
         };
 
-        _connection = factory.CreateConnection();
+        _connection = _factory.CreateConnection();
     }
 
     // ReSharper disable once ConvertToAutoPropertyWhenPossible
     public IConnection? Connection => _connection;
+
+    public void Reconnect()
+    {
+        _connection = _factory.CreateConnection();
+    }
 
 #pragma warning disable CA1816
     public void Dispose()
